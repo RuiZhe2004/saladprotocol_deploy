@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  salad-protocol-backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+      - UPSTASH_VECTOR_REST_URL=${UPSTASH_VECTOR_REST_URL}
+      - UPSTASH_VECTOR_REST_TOKEN=${UPSTASH_VECTOR_REST_TOKEN}
+      - CUSTOM_MODEL_URL=http://food-recognition:8001
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+    depends_on:
+      - food-recognition
+    networks:
+      - salad-network
+
+  food-recognition:
+    build:
+      context: .
+      dockerfile: custom_model/Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - salad-network
+
+networks:
+  salad-network:
+    driver: bridge

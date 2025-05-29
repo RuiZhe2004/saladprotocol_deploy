@@ -1,0 +1,52 @@
+{
+  "nutrition_knowledge": [
+    {
+      "topic": "Macronutrients",
+      "content": [
+        "Proteins are essential for muscle building, tissue repair, and enzyme production. Complete proteins contain all essential amino acids and are found in animal products, quinoa, and soy.",
+        "Carbohydrates are the body's preferred energy source. Complex carbohydrates provide sustained energy and should make up 45-65% of daily calories.",
+        "Fats are essential for hormone production, vitamin absorption, and cell membrane health. Focus on unsaturated fats from nuts, seeds, avocados, and fish."
+      ]
+    },
+    {
+      "topic": "Micronutrients",
+      "content": [
+        "Vitamin B12 is crucial for nerve function and red blood cell formation. It's primarily found in animal products, making supplementation important for vegans.",
+        "Iron deficiency is common, especially in women. Combine iron-rich foods with vitamin C sources to enhance absorption.",
+        "Calcium works with vitamin D for bone health. Non-dairy sources include leafy greens, almonds, and fortified plant milks."
+      ]
+    },
+    {
+      "topic": "Meal Planning",
+      "content": [
+        "The plate method is an effective portion control strategy: fill half your plate with vegetables, one quarter with lean protein, and one quarter with whole grains.",
+        "Meal prep can help maintain consistent nutrition and save time. Focus on batch cooking proteins and chopping vegetables in advance.",
+        "Eating regular meals every 3-4 hours helps maintain stable blood sugar levels and prevents overeating."
+      ]
+    },
+    {
+      "topic": "Weight Management",
+      "content": [
+        "Sustainable weight loss occurs at 1-2 pounds per week through a moderate caloric deficit of 500-1000 calories per day.",
+        "Muscle mass preservation during weight loss requires adequate protein intake (1.2-1.6g per kg body weight) and resistance training.",
+        "Mindful eating practices, such as eating slowly and paying attention to hunger cues, can help prevent overeating."
+      ]
+    },
+    {
+      "topic": "Hydration",
+      "content": [
+        "Water needs vary based on activity level, climate, and individual factors. A general guideline is 8-10 cups per day.",
+        "Signs of proper hydration include pale yellow urine and feeling energetic. Dark urine may indicate dehydration.",
+        "Electrolyte balance is important during intense exercise or hot weather. Natural sources include coconut water and fruits."
+      ]
+    },
+    {
+      "topic": "Special Diets",
+      "content": [
+        "Plant-based diets can be nutritionally complete with attention to protein combining, B12, iron, and omega-3 fatty acids.",
+        "Mediterranean diet patterns are associated with reduced risk of heart disease and include olive oil, fish, whole grains, and plenty of vegetables.",
+        "Intermittent fasting may offer metabolic benefits for some people, but it's not suitable for everyone, especially those with certain medical conditions."
+      ]
+    }
+  ]
+}
