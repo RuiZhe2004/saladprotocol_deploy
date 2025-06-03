@@ -1,201 +1,217 @@
-# Salad Protocol - AI Nutritionist Chatbot
 
-A comprehensive AI-powered nutritionist chatbot with food image recognition capabilities, built with Next.js frontend and Python FastAPI backend.
+# 🥗 Salad Protocol - AI Nutritionist Chatbot
 
-## Features
+A comprehensive AI-powered nutritionist chatbot with food image recognition, built with **Next.js frontend** and **Python FastAPI backend**.
 
-- 🤖 **AI Nutritionist Chat**: Personalized nutrition advice using Gemini API
-- 📸 **Food Image Recognition**: Custom ML model for food identification and calorie estimation
-- 🔍 **Knowledge Base**: RAG system with Upstash Vector for semantic search
-- 👤 **User Profiles**: Personalized responses based on user data (age, height, weight)
-- 🔥 **Firebase Integration**: Secure data storage and image hosting
-- 🥗 **Healthy Design**: Green-themed UI promoting wellness
+---
 
-## Tech Stack
+## 🚀 Features
 
-### Frontend
-- Next.js 14 with App Router
-- React with TypeScript
-- Tailwind CSS + shadcn/ui
-- Responsive design
+- 🤖 **AI Nutritionist Chat** – Personalized dietary advice using **Gemini API**
+- 📸 **Food Image Recognition** – Custom ML model for food identification and calorie estimation
+- 🧠 **RAG System** – Knowledge base with **Upstash Vector** for semantic search
+- 👤 **User Profiles** – Personalized responses based on age, height, and weight
+- 🔥 **Firebase Integration** – Secure user data storage
+- 🌿 **Healthy Design** – Wellness-themed UI with a calming green palette
 
-### Backend
-- Python FastAPI
-- Gemini API for chat and embeddings
-- Upstash Vector for knowledge base
-- Firebase for data storage
-- Custom food recognition model
+---
 
-## Project Structure
+## 🧱 Tech Stack
 
-\`\`\`
+### 🖥️ Frontend
+- [Next.js 14](https://nextjs.org/) (App Router)
+- TypeScript + React
+- Tailwind CSS + `shadcn/ui`
+- Responsive Design
+
+### 🧠 Backend
+- [FastAPI](https://fastapi.tiangolo.com/)
+- Gemini API (chat + embeddings)
+- Firebase Firestore
+- Upstash Vector (vector DB for RAG)
+- Custom food recognition ML model
+
+---
+
+## 📁 Project Structure
+
+```
 salad-protocol/
 ├── frontend/                 # Next.js frontend
-│   ├── app/
-│   │   ├── page.tsx         # Login page
-│   │   ├── profile-setup/   # Profile setup
-│   │   ├── chat/           # Main chat interface
-│   │   └── api/            # API routes
-│   └── components/         # UI components
-├── backend/                 # Python FastAPI backend
-│   ├── main.py             # Main FastAPI app
-│   ├── auth/               # Authentication services
-│   ├── chat/               # Chat services
-│   ├── food/               # Food analysis services
-│   ├── database/           # Firebase integration
-│   ├── vector_db/          # Vector database services
-│   └── custom_model/       # Food recognition model
+│   ├── app/                  # App Router pages
+│   │   ├── page.tsx          # Login page
+│   │   ├── profile-setup/    # Profile setup flow
+│   │   ├── chat/             # Chat interface
+│   │   └── api/              # Frontend API routes
+│   └── components/           # Reusable UI components
+├── backend/                  # FastAPI backend
+│   ├── main.py               # Main FastAPI app
+│   ├── auth/                 # Authentication logic
+│   ├── chat/                 # AI chat logic
+│   ├── food/                 # Food analysis endpoints
+│   ├── database/             # Firebase integration
+│   ├── vector_db/            # Vector store interface
+│   └── custom_model/         # Custom ML model API
 └── README.md
-\`\`\`
+```
 
-## Setup Instructions
+---
 
-### Prerequisites
+## ⚙️ Setup Instructions
 
-1. **API Keys & Services**:
-   - Gemini API key
-   - Firebase project with Firestore and Storage
-   - Upstash Vector database
-   - Service account key for Firebase Admin
+### ✅ Prerequisites
 
-### Backend Setup
+- Gemini API Key  
+- Firebase project (with Firestore)
+- Upstash Vector Database
+- Firebase Admin SDK key file (`serviceAccountKey.json`)
 
-1. **Navigate to backend directory**:
-   \`\`\`
-   cd backend
-   \`\`\`
+---
 
-2. **Create virtual environment**:
-   \`\`\`
-   python -m venv venv (No need if you've created already)
-   venv\Scripts\activate 
-   \`\`\`
+### 🧠 Backend Setup
 
-3. **Install dependencies**:
-   \`\`\`
-   pip install -r requirements.txt
-   \`\`\`
+```bash
+# 1. Navigate to backend
+cd backend
 
-4. **Set up Firebase**:
-   - Download your Firebase service account key
-   - Place it in the backend directory as `serviceAccountKey.json`
-   - Update `GOOGLE_APPLICATION_CREDENTIALS` in `.env`
+# 2. (Optional) Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 
-5. **Run the backend**:
-   \`\`\`
-   uvicorn main:app --reload --port 8000
-   \`\`\`
+# 3. Install dependencies
+pip install -r requirements.txt
 
-6. **Run the custom model API** (in a separate terminal):
-   \`\`\`
-   cd custom_model
-   python food_recognition_api.py
-   \`\`\`
+# 4. Ensure your Firebase service key is placed here
+./backend/serviceAccountKey.json
 
-### Frontend Setup
+# 5. Run the backend
+uvicorn main:app --reload --port 8000
+```
 
-1. **Navigate to frontend directory**:
-   \`\`\`
-   cd frontend
-   \`\`\`
+#### 🧪 Run the Custom Model API (in a new terminal)
 
-2. **Install dependencies**:
-   \`\`\`
-   npm install
-   \`\`\`
+```bash
+cd backend/custom_model
+python food_recognition_api.py
+```
 
+---
 
-3. **Run the frontend**:
-   \`\`\`bash
-   npm run dev
-   \`\`\`
+### 🌐 Frontend Setup
 
+```bash
+# 1. Navigate to frontend
+cd frontend
 
-### Backend (.env)
-\`\`\`env
+# 2. Install dependencies
+npm install
+
+# 3. Run development server
+npm run dev
+```
+
+---
+
+## 🧪 Environment Configuration
+
+### `.env` (Backend)
+
+```env
 GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
-FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 UPSTASH_VECTOR_REST_URL=your_upstash_url
 UPSTASH_VECTOR_REST_TOKEN=your_upstash_token
 CUSTOM_MODEL_URL=http://localhost:8001
-\`\`\`
+```
 
-### Frontend (.env.local)
-\`\`\`env
+### `.env.local` (Frontend)
+
+```env
 PYTHON_BACKEND_URL=http://localhost:8000
+
 NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-\`\`\`
+```
 
-## Custom Food Recognition Model Integration
+---
 
-The system is designed to integrate with your custom food recognition model:
+## 🧠 Custom Food Recognition Model
 
-1. **Model API**: Implement your model in `backend/custom_model/food_recognition_api.py`
-2. **Expected Input**: Image file (JPEG/PNG)
-3. **Expected Output**: JSON with nutritional breakdown:
-   \`\`\`json
-   {
-     "food_items": [
-       {
-         "name": "Food Name",
-         "calories": 100,
-         "protein": 10.0,
-         "carbs": 15.0,
-         "fat": 5.0,
-         "portion_size": "100g"
-       }
-     ],
-     "total_calories": 100,
-     "total_protein": 10.0,
-     "total_carbs": 15.0,
-     "total_fat": 5.0
-   }
-   \`\`\`
+Your FastAPI backend integrates a custom image recognition model for nutritional breakdown.
 
-## Usage
+### 📤 Input
+- Image file (JPG/PNG)
 
-1. **Login**: Enter username (creates account if new)
-2. **Profile Setup**: New users provide age, height, weight
-3. **Chat**: Ask nutrition questions, get personalized advice
-4. **Food Analysis**: Upload food photos for nutritional analysis
-5. **Integrated Experience**: Ask questions about analyzed food
+### 📥 Output (Example)
+```json
+{
+  "food_items": [
+    {
+      "name": "Fried Rice",
+      "calories": 300,
+      "protein": 6.0,
+      "carbs": 40.0,
+      "fat": 10.0,
+      "portion_size": "200g"
+    }
+  ],
+  "total_calories": 300,
+  "total_protein": 6.0,
+  "total_carbs": 40.0,
+  "total_fat": 10.0
+}
+```
 
-## Key Features Implementation
+> ⚠️ The current model uses mock data — replace with your trained model.
 
-### RAG System
-- Knowledge base stored in Upstash Vector
-- Semantic search using Gemini embeddings
-- Context-aware responses
+---
 
-### Personalization
-- User profile integration in chat prompts
-- Age, height, weight-based recommendations
-- Food history tracking
+## 🧩 System Flow
 
-### Food Recognition
-- Custom model integration ready
-- Firebase image storage
-- Nutritional data extraction
+1. **Login** – User enters a username (creates account if new).
+2. **Profile Setup** – User provides personal health data.
+3. **Chat** – Ask diet questions, receive AI-powered answers.
+4. **Food Analysis** – Upload image and receive nutritional insights.
+5. **Knowledge Base** – Ask about food content with RAG-supported answers.
 
-## Development Notes
+---
 
-- The custom food recognition model currently returns mock data
-- Replace the mock implementation with your trained model
-- Knowledge base can be expanded by adding more nutrition content
-- All user data is securely stored in Firebase
+## 💡 Key Modules
 
-## Contributing
+### 🧠 RAG Knowledge Base
+- Embeddings generated via Gemini API
+- Semantic similarity search using Upstash Vector
+- Retrieved context sent in prompts
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### 👤 Personalization
+- Recommendations based on profile (age, height, weight)
+- Food history saved for future reference
 
-## License
+### 🍱 Food Recognition
+- Custom ML model for nutrient estimation
+- Easily replaceable with production-grade model
 
-This project is licensed under the MIT License.
+---
+
+## 🧑‍💻 Development Notes
+
+- 🔁 All AI responses are context-aware
+- 🧪 Firebase stores only structured data (no images, unless you re-enable storage)
+- 🧠 Gemini handles both chat and embedding generation
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo  
+2. Create a new feature branch  
+3. Implement changes  
+4. Test thoroughly  
+5. Submit a PR 🚀
+
+---
+
+## 📄 License
+
+MIT License. See [`LICENSE`](./LICENSE) for details.
