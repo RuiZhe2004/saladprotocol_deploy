@@ -61,19 +61,19 @@ salad-protocol/
 ### Backend Setup
 
 1. **Navigate to backend directory**:
-   \`\`\`bash
+   \`\`\`
    cd backend
    \`\`\`
 
-2. **Install dependencies**:
-   \`\`\`bash
-   pip install -r requirements.txt
+2. **Create virtual environment**:
+   \`\`\`
+   python -m venv venv (No need if you've created already)
+   venv\Scripts\activate 
    \`\`\`
 
-3. **Configure environment variables**:
-   \`\`\`bash
-   cp .env.example .env
-   # Edit .env with your API keys and configuration
+3. **Install dependencies**:
+   \`\`\`
+   pip install -r requirements.txt
    \`\`\`
 
 4. **Set up Firebase**:
@@ -82,12 +82,12 @@ salad-protocol/
    - Update `GOOGLE_APPLICATION_CREDENTIALS` in `.env`
 
 5. **Run the backend**:
-   \`\`\`bash
+   \`\`\`
    uvicorn main:app --reload --port 8000
    \`\`\`
 
 6. **Run the custom model API** (in a separate terminal):
-   \`\`\`bash
+   \`\`\`
    cd custom_model
    python food_recognition_api.py
    \`\`\`
@@ -95,35 +95,21 @@ salad-protocol/
 ### Frontend Setup
 
 1. **Navigate to frontend directory**:
-   \`\`\`bash
+   \`\`\`
    cd frontend
    \`\`\`
 
 2. **Install dependencies**:
-   \`\`\`bash
+   \`\`\`
    npm install
    \`\`\`
 
-3. **Configure environment variables**:
-   \`\`\`bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your configuration
-   \`\`\`
 
-4. **Run the frontend**:
+3. **Run the frontend**:
    \`\`\`bash
    npm run dev
    \`\`\`
 
-### Docker Setup (Alternative)
-
-1. **Build and run with Docker Compose**:
-   \`\`\`bash
-   cd backend
-   docker-compose up --build
-   \`\`\`
-
-## Environment Variables
 
 ### Backend (.env)
 \`\`\`env
