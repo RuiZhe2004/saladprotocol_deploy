@@ -1,0 +1,212 @@
+{
+  "Adults_18_59": {
+    "Macronutrient_Recommendations": {
+      "Carbohydrate": "50-65% (optimal 50-55%)",
+      "Protein": "10-20%",
+      "Fat": "25-35%"
+    },
+    "Daily_Recommended_Servings": {
+      "Vegetables": ">3 servings (zero calorie per serving)",
+      "Fruits": "2 servings (60 kcal & 15g CHO per serving)",
+      "Rice_Cereals_Wholegrain": "4 servings (150 kcal, 30g CHO, 4g protein, 1g fat per serving)",
+      "Fish": "1 serving (70 kcal, 14g protein, 2g fat per serving)",
+      "Poultry_Meat_Egg": "1 serving (130 kcal, 14g protein, 8g fat per serving)",
+      "Legumes": "1 serving (220 kcal, 14g protein, 40g CHO, 0.5g fat per serving)",
+      "Milk_Milk_Products": "2 servings (90 kcal, 15g CHO, 8g protein, 1g fat per serving)",
+      "Fats_Oils": "8 servings (45 kcal per 5g fat; nuts = 65 kcal per serving)",
+      "Sugar": "1 serving (60 kcal, 15g CHO; 3 tsp sugar = 1 serving)"
+    },
+    "Nutritional_Composition_Common_Foods": [
+      {
+        "Food_Item": "White rice",
+        "Measure": "2 scoops cooked",
+        "Energy": "~150 kcal"
+      },
+      {
+        "Food_Item": "Wholegrain bread",
+        "Measure": "2 slices",
+        "Energy": "1 serving"
+      },
+      {
+        "Food_Item": "Spinach (stir-fried)",
+        "Measure": "60g",
+        "Energy": "1 vegetable serving"
+      }
+    ],
+    "Malaysian_Healthy_Plate": {
+      "Vegetables_Fruits": "½ Plate",
+      "Grains_Rice_Cereal": "¼ Plate",
+      "Protein": "¼ Plate (Fish, Poultry, Legumes)",
+      "Drink": "Plain water or unsweetened beverages"
+    },
+    "Top_Foods_Consumed": [
+      "White rice (98.4%)",
+      "Hen egg (95.2%)",
+      "Green leafy vegetables (94.8%)",
+      "Chicken (94.5%)",
+      "Marine fish (93.5%)"
+    ],
+    "Legumes_Nuts": {
+      "Daily": "≥1 serving legumes (dhal, tempeh, tofu)",
+      "Weekly": "Nuts ≥4 times/week (small handful)",
+      "Nutritional_Value": "Protein, fiber, healthy fats, phytochemicals"
+    },
+    "Hydration_Guidelines": {
+      "Daily_intake": "6-8 glasses plain water (1.5-2.0 L)",
+      "Pre_exercise": "500 ml ~2 hours before exercise",
+      "During_exercise": "Based on thirst (~max 800 ml/hr)",
+      "After_exercise": "450-720 ml per 0.5 kg weight lost",
+      "During_fasting": "Distribute between sahur & iftar"
+    },
+    "Healthy_Cooking_Eating_Practices": [
+      "Plan menus and buy only needed groceries",
+      "Choose lean cuts, trim visible fat",
+      "Prefer steaming, boiling, air-frying",
+      "Reduce oil, salt, sugar, processed foods"
+    ],
+    "Physical_Activity_Guidelines": {
+      "General_Adults": "150-300 min/week moderate OR 75-150 min vigorous",
+      "Muscle_training": "≥2 times/week",
+      "Pregnant_Women": "≥150 min moderate (e.g., walk, yoga, swim)",
+      "Overweight_Adults": "≥45 min/day for weight loss",
+      "Weight_maintenance": "60-90 min/day"
+    },
+    "Activity_Pyramid": {
+      "Daily": "Walking, chores",
+      "2-3x_week": "Swimming, football",
+      "Strength": "Squats, yoga",
+      "Limit": "Screen time, prolonged sitting"
+    },
+    "Fats_Oils": {
+      "Reduce": "Saturated fat (butter, ghee, fatty meats)",
+      "Avoid": "Trans fat (look for 'partially hydrogenated oils')",
+      "Prefer": "Plant oils (corn, sunflower, soybean)",
+      "Eat": "Omega-3 rich fish (sardines, siakap) ≥3x/week"
+    },
+    "Dietary_Messages": [
+      "Eat a variety of foods within recommended servings",
+      "Eat more fruits and vegetables daily",
+      "Limit fats, salt, and sugar",
+      "Drink plenty of water (6-8 glasses)"
+    ]
+  },
+  "Children_Adolescents": {
+    "Exclusive_Breastfeeding": {
+      "0-6_months": "Breastfeed exclusively",
+      "6-24_months": "Continue breastfeeding until 2 years",
+      "Additional_nutrition": "+1 serving milk, +1 serving rice or cereal for mother"
+    },
+    "Complementary_Feeding": [
+      {
+        "Age_Group": "6-8 months",
+        "Meals_day": "2-3",
+        "Snacks_day": "1-2",
+        "Portion": "½ cup porridge per meal"
+      },
+      {
+        "Age_Group": "9-11 months",
+        "Meals_day": "3-4",
+        "Snacks_day": "1-2",
+        "Portion": "1 cup porridge per meal"
+      }
+    ],
+    "Physical_Activity": {
+      "Daily": "60 mins moderate-to-vigorous activity",
+      "Muscle_Bone": "Include muscle and bone-strengthening 3x/week",
+      "Limit": "Screen time ≤ 2 hours/day"
+    },
+    "Grain_Cereal_Tubers_Servings": [
+      {
+        "Age_Group": "4-6 yrs",
+        "Servings_day": "3"
+      },
+      {
+        "Age_Group": "7-9 yrs",
+        "Servings_day": "4-5"
+      }
+    ],
+    "Fruits_Vegetables": {
+      "<7_yrs": "2 servings each of fruits and vegetables daily",
+      "7-18_yrs": "3 servings vegetables, 2 servings fruits",
+      "Limit": "Juice to 1 serving, avoid added sugar"
+    }
+  },
+  "Elder_Persons": {
+    "Physiological_Nutritional_Concerns": [
+      "Maldigestion, malabsorption",
+      "Dry mouth, poor appetite",
+      "Loss of smell/taste",
+      "Chronic illness"
+    ],
+    "Key_Nutrients": [
+      {
+        "Nutrient": "Protein",
+        "Advice": "≥1.0 g/kg BW/day (healthy), ≥1.2 g/kg BW/day (sarcopenia/frailty)"
+      },
+      {
+        "Nutrient": "Calcium",
+        "Advice": "Increase intake via natural food (leafy greens, nuts)"
+      }
+    ],
+    "Hydration": "Minimum 6-8 glasses/day",
+    "Physical_Activity": "Low-impact endurance, balance, strength, and flexibility exercises"
+  },
+  "Vegetarians": {
+    "Types": [
+      {
+        "Type": "Lacto-ovo vegetarian",
+        "Description": "Avoids meat, fish, poultry; includes dairy and eggs"
+      },
+      {
+        "Type": "Vegan",
+        "Description": "Avoids all animal products, including honey"
+      }
+    ],
+    "Key_Nutrients": [
+      {
+        "Nutrient": "Protein",
+        "Sources": "Soya, legumes, tofu, nuts, seeds, whole grains"
+      },
+      {
+        "Nutrient": "Vitamin B12",
+        "Sources": "Fortified cereals, nutritional yeast, plant-based milk"
+      }
+    ],
+    "Malaysian_Healthy_Plate": {
+      "Grains": "¼ Plate",
+      "Protein": "¼ Plate (Legumes, tofu, tempeh, eggs)",
+      "Fruits_Vegetables": "½ Plate",
+      "Drink": "Plain water"
+    }
+  },
+  "Recommended_Nutrient_Intakes": {
+    "Energy_Protein_Requirements": [
+      {
+        "Age_Group": "0-2 months",
+        "Gender": "Male",
+        "Energy_kcal_day": "470",
+        "Protein_g_day": "8"
+      },
+      {
+        "Age_Group": "18-29 years (Adult)",
+        "Gender": "Female",
+        "Energy_kcal_day": "1610-2080",
+        "Protein_g_day": "53"
+      }
+    ],
+    "Pregnancy": [
+      {
+        "Trimester": "1st trimester",
+        "Energy_Increase_kcal": "+80",
+        "Protein_Increase_g_day": "+0.5"
+      }
+    ],
+    "Lactation": [
+      {
+        "Period": "1st 6 months (exclusive)",
+        "Energy_Increase_kcal": "+500",
+        "Protein_Increase_g_day": "+19"
+      }
+    ]
+  }
+}

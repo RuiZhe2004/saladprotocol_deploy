@@ -7,6 +7,9 @@ from datetime import datetime, date
 import json
 import logging
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Import custom modules (to be created)
 from auth.auth_service import AuthService
 from chat.chat_service import ChatService
