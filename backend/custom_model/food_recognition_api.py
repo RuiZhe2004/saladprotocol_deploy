@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import os
 import numpy as np
 from PIL import Image
 import io
@@ -26,11 +27,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load your trained model
-model = load_model("C:/Users\Asus TUF/SaladProtocol_v2/backend/custom_model/food_detection.h5")
+# Get the directory where this script is located
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load your trained model using relative paths
+model_path = os.path.join(current_dir, "food_detection.h5")
+labels_path = os.path.join(current_dir, "class_labels.json")
+
+# Log the paths to help with debugging
+logger.info(f"Loading model from: {model_path}")
+logger.info(f"Loading labels from: {labels_path}")
+
+# Load model and labels
+model = load_model(model_path)
 
 # Load class labels
-with open("C:/Users/Asus TUF/SaladProtocol_v2/backend/custom_model/class_labels.json", "r") as f:
+with open(labels_path, "r") as f:
     class_labels = json.load(f)
 class_labels = {int(k): v for k, v in class_labels.items()}
 

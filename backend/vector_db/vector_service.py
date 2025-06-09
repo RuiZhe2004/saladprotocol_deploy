@@ -2,6 +2,7 @@ import google.generativeai as genai
 from upstash_vector import Index
 import os
 import logging
+from datetime import datetime
 from typing import List, Dict, Any
 import hashlib
 import json
@@ -144,20 +145,27 @@ class VectorService:
             search_results = self.vector_index.query(
                 vector=embedding_result['embedding'],
                 top_k=limit,
-                include_metadata=True
             )
             
-            # Format results
-            formatted_results = []
-            for match in search_results.matches:
-                formatted_results.append({
-                    "content": match.metadata.get("content", ""),
-                    "category": match.metadata.get("category", "general"),
-                    "score": match.score,
-                    "id": match.id
-                })
+            # Handle the response structure - it might be a list directly
+            if isinstance(search_results, list):
+                results = search_results
+            else:
+                # Original expected structure with 'matches'
+                results = search_results.get('matches', [])
             
-            return formatted_results
+            # Extract relevant knowledge
+            knowledge_results = []
+            for item in results:
+                if hasattr(item, 'metadata') and item.metadata:
+                    knowledge_results.append({
+                        "id": item.id if hasattr(item, 'id') else "unknown",
+                        "content": item.metadata.get("content", ""),
+                        "category": item.metadata.get("category", "general"),
+                        "score": item.score if hasattr(item, 'score') else 0
+                    })
+                
+            return knowledge_results
             
         except Exception as e:
             logger.error(f"Error searching knowledge: {str(e)}")
