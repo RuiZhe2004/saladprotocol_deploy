@@ -17,33 +17,50 @@ class FoodService:
     
     async def analyze_food_image(self, image_data: bytes, filename: str, username: str) -> Dict[str, Any]:
         """
-        Analyze food image using custom model and store results.
+        Analyze food image using custom model and return results in frontend format.
         """
         try:
             # Step 1: Upload image to Google Cloud Storage
             image_url = self._upload_to_gcs(image_data, filename, username)
             
             # Step 2: Call custom food recognition model
-            analysis_result = await self._call_custom_model(image_data)
-            
-            # Step 3: Store analysis result in Firebase
-            analysis_data = {
-                "username": username,
-                "image_url": image_url,
-                "analysis_result": analysis_result,
-                "timestamp": datetime.now().isoformat()
-            }
-            await self.firebase_service.store_food_analysis(analysis_data)
-            
-            # Step 4: Integrate with knowledge base
+            model_result = await self._call_custom_model(image_data)
+            food_name = model_result.get("predicted_class", "unknown")
+            confidence = model_result.get("confidence", 0.0)
+
+            # Step 3: Get nutrition info
+            nutrition_info = await self._get_nutrition_info(food_name)
+
+            # Step 4: Integrate with knowledge base (optional, not used in frontend display)
             try:
-                knowledge_context = await self._generate_knowledge_context(analysis_result)
+                knowledge_context = await self._generate_knowledge_context({
+                    "food_items": [{"name": food_name}]
+                })
             except Exception as ke:
                 logger.error(f"Knowledge context error (non-critical): {str(ke)}")
                 knowledge_context = []
 
-            return analysis_result  # Return the properly formatted analysis result directly
-                
+            # Step 5: Return in frontend format
+            analysis_result = {
+                "food_items": [
+                    {
+                        "name": food_name,
+                        "calories": nutrition_info.get("calories", 0),
+                        "protein": nutrition_info.get("protein", 0),
+                        "carbs": nutrition_info.get("carbs", 0),
+                        "fat": nutrition_info.get("fat", 0),
+                        "portion_size": nutrition_info.get("portion_size", "100g"),
+                        "confidence": confidence
+                    }
+                ],
+                "total_calories": nutrition_info.get("calories", 0),
+                "total_protein": nutrition_info.get("protein", 0),
+                "total_carbs": nutrition_info.get("carbs", 0),
+                "total_fat": nutrition_info.get("fat", 0),
+                "confidence_score": confidence
+            }
+            return analysis_result
+
         except Exception as e:
             logger.error(f"Food analysis service error: {str(e)}")
             raise e
@@ -62,8 +79,8 @@ class FoodService:
                         model_prediction = await response.json()
                         
                         # Transform the response to match frontend expectations
-                        food_name = result.get("predicted_class", "unknown")
-                        confidence = result.get("confidence", 0.0)
+                        food_name = model_prediction.get("predicted_class", "unknown")
+                        confidence = model_prediction.get("confidence", 0.0)
                         
                         # Get nutrition data for this food
                         nutrition_info = await self._get_nutrition_info(food_name)
