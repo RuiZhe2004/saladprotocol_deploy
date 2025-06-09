@@ -36,17 +36,80 @@ class FoodService:
             await self.firebase_service.store_food_analysis(analysis_data)
             
             # Step 4: Integrate with knowledge base
-            knowledge_context = await self._generate_knowledge_context(analysis_result)
+            try:
+                knowledge_context = await self._generate_knowledge_context(analysis_result)
+            except Exception as ke:
+                logger.error(f"Knowledge context error (non-critical): {str(ke)}")
+                knowledge_context = []
 
-            return {
-                "image_url": image_url,
-                "analysis_result": analysis_result,
-                "knowledge_context": knowledge_context
-            }
-            
+            return analysis_result  # Return the properly formatted analysis result directly
+                
         except Exception as e:
             logger.error(f"Food analysis service error: {str(e)}")
             raise e
+
+    async def _call_custom_model_with_url(self, image_url: str) -> Dict[str, Any]:
+        """
+        Call your custom food recognition model API using the image URL.
+        """
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Use the /predict endpoint with the image URL
+                url = f"{self.custom_model_url}/predict?url={image_url}"
+                
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        model_prediction = await response.json()
+                        
+                        # Transform the response to match frontend expectations
+                        food_name = result.get("predicted_class", "unknown")
+                        confidence = result.get("confidence", 0.0)
+                        
+                        # Get nutrition data for this food
+                        nutrition_info = await self._get_nutrition_info(food_name)
+                        
+                        # Return in the format expected by frontend
+                        return {
+                            "food_items": [
+                                {
+                                    "name": food_name,
+                                    "calories": nutrition_info.get("calories", 0),
+                                    "protein": nutrition_info.get("protein", 0),
+                                    "carbs": nutrition_info.get("carbs", 0),
+                                    "fat": nutrition_info.get("fat", 0),
+                                    "portion_size": nutrition_info.get("portion_size", "100g"),
+                                    "confidence": confidence
+                                }
+                            ],
+                            "total_calories": nutrition_info.get("calories", 0),
+                            "total_protein": nutrition_info.get("protein", 0),
+                            "total_carbs": nutrition_info.get("carbs", 0),
+                            "total_fat": nutrition_info.get("fat", 0)
+                        }
+                    else:
+                        error_text = await response.text()
+                        raise Exception(f"Custom model error: {error_text}")
+                        
+        except Exception as e:
+            logger.error(f"Custom model call error: {str(e)}")
+            return self._get_mock_analysis()
+
+    async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
+        """
+        Get nutrition information for the predicted food.
+        """
+        # This is a simplified version - you could integrate with a nutrition API
+        nutrition_data = {
+            "apple": {"calories": 52, "protein": 0.3, "carbs": 14.0, "fat": 0.2, "portion_size": "100g"},
+            "banana": {"calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3, "portion_size": "100g"},
+            "carrot": {"calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2, "portion_size": "100g"},
+            "orange": {"calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1, "portion_size": "100g"},
+            "tomato": {"calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2, "portion_size": "100g"},
+            # Add more foods or call an actual API like USDA FoodData Central
+        }
+        
+        return nutrition_data.get(food_name.lower(), 
+                                {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"})
     
     def _upload_to_gcs(self, image_data: bytes, filename: str, username: str) -> str:
         """
