@@ -26,13 +26,14 @@ interface FoodAnalysis {
     carbs: number
     fat: number
     portion_size: string
+    confidence?: number
   }>
   total_calories: number
   total_protein: number
   total_carbs: number
   total_fat: number
+  confidence_score?: number
 }
-
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -130,7 +131,7 @@ export default function ChatPage() {
 
       const analysis = await response.json()
 
-      if (response.ok) {
+      if (response.ok && analysis && Array.isArray(analysis.food_items)) {
         setLastFoodAnalysis(analysis)
 
         // Add food analysis message
