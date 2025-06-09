@@ -37,7 +37,7 @@ firebase_service = FirebaseService()
 vector_service = VectorService()
 auth_service = AuthService(firebase_service)
 chat_service = ChatService(firebase_service, vector_service)
-food_service = FoodService(firebase_service)
+food_service = FoodService(firebase_service, vector_service)
 
 # Pydantic models
 class LoginRequest(BaseModel):
