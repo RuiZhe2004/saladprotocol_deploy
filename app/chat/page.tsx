@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Salad, Camera, Send, User, Bot, LogOut, Loader2 } from "lucide-react"
+import { Salad, Camera, Send, User, Bot, LogOut, Loader2,X } from "lucide-react"
 
 interface Message {
   id: string
@@ -26,13 +26,14 @@ interface FoodAnalysis {
     carbs: number
     fat: number
     portion_size: string
+    confidence?: number
   }>
   total_calories: number
   total_protein: number
   total_carbs: number
   total_fat: number
+  confidence_score?: number
 }
-
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -43,6 +44,8 @@ export default function ChatPage() {
   const [lastFoodAnalysis, setLastFoodAnalysis] = useState<FoodAnalysis | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter()
 
   useEffect(() => {
@@ -77,8 +80,40 @@ export default function ChatPage() {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file)
+      
+      // Create and set the preview URL
+      const objectUrl = URL.createObjectURL(file)
+      setPreviewUrl(objectUrl)
     }
   }
+
+  // Add cleanup function to revoke the object URL when no longer needed
+  useEffect(() => {
+    // Cleanup function to revoke object URL when component unmounts or file changes
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
+
+  // Also update the setSelectedFile(null) calls to clear the preview
+  const clearSelectedFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setPreviewUrl(null)
+    setSelectedFile(null)
+  }
+
+  const openImageModal = () => {
+  setIsModalOpen(true);
+  };
+
+  // Add this function to close the modal
+  const closeImageModal = () => {
+    setIsModalOpen(false);
+  };
 
   const analyzeFoodImage = async () => {
     if (!selectedFile) return
@@ -96,7 +131,7 @@ export default function ChatPage() {
 
       const analysis = await response.json()
 
-      if (response.ok) {
+      if (response.ok && analysis && Array.isArray(analysis.food_items)) {
         setLastFoodAnalysis(analysis)
 
         // Add food analysis message
@@ -116,6 +151,11 @@ export default function ChatPage() {
         }
 
         setMessages((prev) => [...prev, analysisMessage])
+        setSelectedFile(null)
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl)
+        }
+        setPreviewUrl(null)
         setSelectedFile(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
@@ -277,14 +317,27 @@ export default function ChatPage() {
             <div className="px-6 py-3 border-t border-green-200 bg-green-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Camera className="h-5 w-5 text-green-600" />
-                  <span className="text-sm text-green-700">{selectedFile.name}</span>
+                  {previewUrl && (
+                    <div 
+                      className="h-12 w-12 rounded-md overflow-hidden border border-green-300 cursor-pointer"
+                      onClick={openImageModal}
+                    >
+                      <img 
+                        src={previewUrl} 
+                        alt="Food preview" 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-sm text-green-700">{selectedFile.name}</span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setSelectedFile(null)}
+                    onClick={clearSelectedFile}
                     className="border-green-300 text-green-700"
                   >
                     Cancel
@@ -305,6 +358,32 @@ export default function ChatPage() {
                     )}
                   </Button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Image Modal */}
+          {isModalOpen && previewUrl && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+              onClick={closeImageModal}
+            >
+              <div className="relative max-w-md max-h-[70vh] w-full mx-4">
+                <img 
+                  src={previewUrl} 
+                  alt="Food" 
+                  className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+                />
+                <button 
+                  className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeImageModal();
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
           )}
