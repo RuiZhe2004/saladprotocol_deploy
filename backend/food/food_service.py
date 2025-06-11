@@ -113,20 +113,56 @@ class FoodService:
 
     async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
         """
-        Get nutrition information for the predicted food.
+        Get nutrition information for the predicted food using USDA API.
         """
-        # This is a simplified version - you could integrate with a nutrition API
-        nutrition_data = {
-            "apple": {"calories": 52, "protein": 0.3, "carbs": 14.0, "fat": 0.2, "portion_size": "100g"},
-            "banana": {"calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3, "portion_size": "100g"},
-            "carrot": {"calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2, "portion_size": "100g"},
-            "orange": {"calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1, "portion_size": "100g"},
-            "tomato": {"calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2, "portion_size": "100g"},
-            # Add more foods or call an actual API like USDA FoodData Central
-        }
+        api_key = os.getenv("USDA_API_KEY")
+        if not api_key:
+            logger.warning("USDA API key not set. Returning default values.")
+            return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_name}&api_key={api_key}"
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        logger.error(f"USDA API error: {response.status}")
+                        return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+                    data = await response.json()
+                    foods = data.get("foods", [])
+                    if not foods:
+                        return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+                    nutrients = {n["nutrientName"].lower(): n["value"] for n in foods[0].get("foodNutrients", [])}
+
+                    return {
+                        "calories": nutrients.get("energy", 0),
+                        "protein": nutrients.get("protein", 0),
+                        "carbs": nutrients.get("carbohydrate, by difference", 0),
+                        "fat": nutrients.get("total lipid (fat)", 0),
+                        "portion_size": "100g"
+                    }
+        except Exception as e:
+            logger.error(f"Nutrition API call failed: {str(e)}")
+            return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+    # async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
+    #     """
+    #     Get nutrition information for the predicted food.
+    #     """
+    #     # This is a simplified version - you could integrate with a nutrition API
+    #     nutrition_data = {
+    #         "apple": {"calories": 52, "protein": 0.3, "carbs": 14.0, "fat": 0.2, "portion_size": "100g"},
+    #         "banana": {"calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3, "portion_size": "100g"},
+    #         "carrot": {"calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2, "portion_size": "100g"},
+    #         "orange": {"calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1, "portion_size": "100g"},
+    #         "tomato": {"calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2, "portion_size": "100g"},
+    #         # Add more foods or call an actual API like USDA FoodData Central
+    #     }
         
-        return nutrition_data.get(food_name.lower(), 
-                                {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"})
+    #     return nutrition_data.get(food_name.lower(), 
+    #                             {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"})
     
     def _upload_to_gcs(self, image_data: bytes, filename: str, username: str) -> str:
         """
