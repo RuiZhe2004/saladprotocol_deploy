@@ -43,6 +43,133 @@ class FoodService:
         except Exception as e:
             logger.error(f"Food analysis service error: {str(e)}")
             raise e
+
+    async def _call_custom_model_with_url(self, image_url: str) -> Dict[str, Any]:
+        """
+        Call your custom food recognition model API using the image URL.
+        """
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Use the /predict endpoint with the image URL
+                url = f"{self.custom_model_url}/predict?url={image_url}"
+                
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        model_prediction = await response.json()
+                        
+                        # Transform the response to match frontend expectations
+                        food_name = model_prediction.get("predicted_class", "unknown")
+                        confidence = model_prediction.get("confidence", 0.0)
+                        
+                        # Get nutrition data for this food
+                        nutrition_info = await self._get_nutrition_info(food_name)
+                        
+                        # Return in the format expected by frontend
+                        return {
+                            "food_items": [
+                                {
+                                    "name": food_name,
+                                    "calories": nutrition_info.get("calories", 0),
+                                    "protein": nutrition_info.get("protein", 0),
+                                    "carbs": nutrition_info.get("carbs", 0),
+                                    "fat": nutrition_info.get("fat", 0),
+                                    "portion_size": nutrition_info.get("portion_size", "100g"),
+                                    "confidence": confidence
+                                }
+                            ],
+                            "total_calories": nutrition_info.get("calories", 0),
+                            "total_protein": nutrition_info.get("protein", 0),
+                            "total_carbs": nutrition_info.get("carbs", 0),
+                            "total_fat": nutrition_info.get("fat", 0)
+                        }
+                    else:
+                        error_text = await response.text()
+                        raise Exception(f"Custom model error: {error_text}")
+                        
+        except Exception as e:
+            logger.error(f"Custom model call error: {str(e)}")
+            return self._get_mock_analysis()
+
+    # async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
+    #     """
+    #     Get nutrition information for the predicted food.
+    #     """
+    #     # This is a simplified version - you could integrate with a nutrition API
+    #     nutrition_data = {
+    #         "apple": {"calories": 52, "protein": 0.3, "carbs": 14.0, "fat": 0.2, "portion_size": "100g"},
+    #         "banana": {"calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3, "portion_size": "100g"},
+    #         "carrot": {"calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2, "portion_size": "100g"},
+    #         "orange": {"calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1, "portion_size": "100g"},
+    #         "tomato": {"calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2, "portion_size": "100g"},
+    #         # Add more foods or call an actual API like USDA FoodData Central
+    #     }
+        
+    #     return nutrition_data.get(food_name.lower(), 
+    #                             {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"})
+    async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
+        """
+        Get nutrition information for the predicted food using USDA API.
+        """
+        api_key = os.getenv("USDA_API_KEY")
+        if not api_key:
+            logger.warning("USDA API key not set. Returning default values.")
+            return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_name}&api_key={api_key}"
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        logger.error(f"USDA API error: {response.status}")
+                        return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+                    data = await response.json()
+                    logger.info(f"Querying USDA API for: {food_name}")
+                    logger.info(f"USDA API URL: {url}")
+                    logger.info(f"USDA response data: {data}")
+                    foods = data.get("foods", [])
+                    if not foods:
+                        return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+                    nutrients = {n["nutrientName"].lower(): n["value"] for n in foods[0].get("foodNutrients", [])}
+
+                    return {
+                        "calories": nutrients.get("energy", 0),
+                        "protein": nutrients.get("protein", 0),
+                        "carbs": nutrients.get("carbohydrate, by difference", 0),
+                        "fat": nutrients.get("total lipid (fat)", 0),
+                        "portion_size": "100g"
+                    }
+        except Exception as e:
+            logger.error(f"Nutrition API call failed: {str(e)}")
+            return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+    
+    def _upload_to_gcs(self, image_data: bytes, filename: str, username: str) -> str:
+        """
+        Upload image to Google Cloud Storage and return the public URL.
+        """
+        try:
+            # Initialize Google Cloud Storage client
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(self.gcs_bucket_name)
+            
+            # Create a unique file path
+            blob_path = f"food_images/{username}/{datetime.now().isoformat()}_{filename}"
+            blob = bucket.blob(blob_path)
+            
+            # Upload the image
+            blob.upload_from_string(image_data, content_type="image/jpeg")
+            
+            # Make the file publicly accessible
+            blob.make_public()
+            
+            logger.info(f"Image uploaded to GCS: {blob.public_url}")
+            return blob.public_url
+        except Exception as e:
+            logger.error(f"Error uploading image to GCS: {str(e)}")
+            raise e
     
     async def _call_custom_model(self, image_data: bytes) -> Dict[str, Any]:
         """
