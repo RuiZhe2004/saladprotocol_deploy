@@ -131,19 +131,61 @@ class FoodService:
                         return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
 
                     data = await response.json()
+                    for item in data.get('foods', []):
+                        fdc_id = item.get('fdcId')
+                        nutrients = item.get('foodNutrients', [])
+                        logger.info(f"FDC ID: {fdc_id}")
+                        
+                    # logger.info(f"Querying USDA API for: {food_name}")
+                    # logger.info(f"USDA API URL: {url}")
+                    # logger.info(f"USDA response data: {data}")
                     foods = data.get("foods", [])
                     if not foods:
                         return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+                    
+                    # food_nutrients = foods[0].get("foodNutrients", [])
 
-                    nutrients = {n["nutrientName"].lower(): n["value"] for n in foods[0].get("foodNutrients", [])}
+                    for food in foods:
+                        nutrients = food.get("foodNutrients", [])
+                        if any(n.get("value", 0) > 0 for n in nutrients):
+                            food_nutrients = nutrients
+                            break
+                    else:
+                        return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
+
+                    calories = protein = carbs = fat = 0
+
+                    for nutrient in food_nutrients:
+                        name = nutrient.get("nutrientName", "").lower()
+                        value = nutrient.get("value", 0)
+                        if "energy" in name or "kcal" in name:
+                            calories = value
+                        elif "protein" in name:
+                            protein = value
+                        elif "carbohydrate" in name:
+                            carbs = value
+                        elif "total lipid (fat)" in name:
+                            fat = value
 
                     return {
-                        "calories": nutrients.get("energy", 0),
-                        "protein": nutrients.get("protein", 0),
-                        "carbs": nutrients.get("carbohydrate, by difference", 0),
-                        "fat": nutrients.get("total lipid (fat)", 0),
+                        "calories": calories,
+                        "protein": protein,
+                        "carbs": carbs,
+                        "fat": fat,
                         "portion_size": "100g"
                     }
+
+
+
+                    # nutrients = {n["nutrientName"].lower(): n["value"] for n in foods[0].get("foodNutrients", [])}
+
+                    # return {
+                    #     "calories": nutrients.get("energy", 0),
+                    #     "protein": nutrients.get("protein", 0),
+                    #     "carbs": nutrients.get("carbohydrate, by difference", 0),
+                    #     "fat": nutrients.get("total lipid (fat)", 0),
+                    #     "portion_size": "100g"
+                    # }
         except Exception as e:
             logger.error(f"Nutrition API call failed: {str(e)}")
             return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
