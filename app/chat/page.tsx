@@ -16,6 +16,8 @@ interface Message {
   content: string
   timestamp: Date
   foodAnalysis?: any
+  imageUrl?: string
+  fileName?: string 
 }
 
 interface FoodAnalysis {
@@ -46,6 +48,7 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const router = useRouter()
 
   useEffect(() => {
@@ -113,7 +116,12 @@ export default function ChatPage() {
   // Add this function to close the modal
   const closeImageModal = () => {
     setIsModalOpen(false);
+    setModalImageUrl(null);
   };
+
+  const handleImageModal = (url: string) => {
+  setModalImageUrl(url);
+};
 
   const analyzeFoodImage = async () => {
     if (!selectedFile) return
@@ -134,7 +142,7 @@ export default function ChatPage() {
       if (response.ok && analysis && Array.isArray(analysis.food_items)) {
         setLastFoodAnalysis(analysis)
 
-        // Add food analysis message
+        // Add food analysis message & image
         const analysisMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
@@ -148,6 +156,8 @@ export default function ChatPage() {
             )}\n\n**Total:** ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat\n\nFeel free to ask me any questions about this meal!`,
           timestamp: new Date(),
           foodAnalysis: analysis,
+          imageUrl: analysis.image_url || "",
+          fileName: selectedFile.name,
         }
 
         setMessages((prev) => [...prev, analysisMessage])
@@ -280,6 +290,17 @@ export default function ChatPage() {
                       message.role === "user" ? "bg-green-500 text-white" : "bg-white border border-green-200"
                     }`}
                   >
+                    {/* Show image if present */}
+                    {message.imageUrl && (
+                      <div className="mb-2">
+                        <img
+                          src={message.imageUrl}
+                          alt="uploaded food"
+                          className="w-40 sm:w-48 md:w-56 h-auto rounded-md border border-green-200 cursor-pointer object-cover"
+                          onClick={() => handleImageModal(message.imageUrl!)}
+                        />
+                      </div>
+                    )}
                     <div className="whitespace-pre-wrap text-sm">{message.content}</div>
                     {message.foodAnalysis && (
                       <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
@@ -414,6 +435,30 @@ export default function ChatPage() {
             </form>
           </div>
         </Card>
+        {modalImageUrl && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+            onClick={closeImageModal}
+          >
+            <div className="relative max-w-md max-h-[70vh] w-full mx-4">
+              <img
+                src={modalImageUrl}
+                alt="Food"
+                className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                onClick={e => e.stopPropagation()}
+              />
+              <button
+                className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
+                onClick={e => {
+                  e.stopPropagation();
+                  closeImageModal();
+                }}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
