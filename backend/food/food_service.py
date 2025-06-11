@@ -42,6 +42,7 @@ class FoodService:
 
             # Step 5: Return in frontend format
             analysis_result = {
+                "image_url": image_url,
                 "food_items": [
                     {
                         "name": food_name,
