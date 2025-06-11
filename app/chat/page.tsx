@@ -146,14 +146,14 @@ export default function ChatPage() {
         const analysisMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
-          content: `I've analyzed your food image! Here's what I found:\n\n${analysis.food_items
+          content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
             .map(
               (item: any) =>
-                `🍽️ **${item.name}** (${item.portion_size})\n   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
+                `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
             )
             .join(
-              "\n\n",
-            )}\n\n**Total:** ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat\n\nFeel free to ask me any questions about this meal!`,
+              "<br/><br/>",
+            )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
           timestamp: new Date(),
           foodAnalysis: analysis,
           imageUrl: analysis.image_url || "",
@@ -301,7 +301,7 @@ export default function ChatPage() {
                         />
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                    <div className="whitespace-pre-wrap text-sm" dangerouslySetInnerHTML={{ __html: message.content }} />
                     {message.foodAnalysis && (
                       <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
                         <div className="text-xs text-green-600 font-medium mb-2">Food Analysis Data</div>

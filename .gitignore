@@ -26,10 +26,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-<<<<<<< HEAD
-# .gitignore
+# Ignore all __pycache__ directories
+__pycache__/
+
+# Ignore all .pyc files
 *.pyc
-_pycache_/
-=======
+
+# Ignore venvs created by virtualenv
 venv
 >>>>>>> 6d2c524a13ccb2b03c95c92949fa69a5d1f55776
