@@ -133,7 +133,7 @@ class ChatService:
                 relevant_knowledge=relevant_knowledge,
                 last_food_analysis=last_food_analysis,
                 conversation_history=conversation_history,
-                model_prediction=model_prediction  #removed conversation_history
+                model_prediction=model_prediction 
             )
 
             # Generate response using Gemini
@@ -141,7 +141,7 @@ class ChatService:
 
             # Store conversation in Firebase for future reference
             await self._store_conversation(username, message, response.text)
-            
+
             return response.text
 
         except Exception as e:
@@ -255,7 +255,7 @@ The user may be asking questions about this food analysis.
         if model_prediction:
             prompt_parts.append(f"Based on model analysis, the recommended advice category is:\n{model_prediction}")  # Modified Prompt
 
-        # Conversation historyAdd commentMore actions
+        # Conversation history
         if conversation_history:
             history_context = "Recent conversation:\n"
             for msg in conversation_history[-5:]:  # Last 5 messages
@@ -278,7 +278,7 @@ The user may be asking questions about this food analysis.
                 "username": username,
                 "user_message": user_message,
                 "ai_response": ai_response,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.datetime.now().isoformat()
             }
             
             await self.firebase_service.store_conversation(conversation_data)

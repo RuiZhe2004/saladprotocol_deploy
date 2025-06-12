@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         message,
         username,
         last_food_analysis: lastFoodAnalysis,
-        conversation_history: conversationHistory
+        conversation_history: conversationHistory,
       }),
     })
 
