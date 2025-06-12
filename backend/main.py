@@ -53,6 +53,7 @@ class ChatRequest(BaseModel):
     message: str
     username: str
     last_food_analysis: Optional[Dict[str, Any]] = None
+    conversation_history: Optional[List[Dict[str, Any]]] = None
 
 class LoginResponse(BaseModel):
     is_new_user: bool
@@ -97,7 +98,8 @@ async def chat(request: ChatRequest):
         response = await chat_service.get_response(
             message=request.message,
             username=request.username,
-            last_food_analysis=request.last_food_analysis
+            last_food_analysis=request.last_food_analysis,
+            conversation_history=request.conversation_history
         )
         return ChatResponse(response=response)
     except Exception as e:

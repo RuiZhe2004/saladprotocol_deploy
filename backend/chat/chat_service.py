@@ -108,6 +108,7 @@ class ChatService:
             message: str,
             username: str,
             last_food_analysis: Optional[Dict[str, Any]] = None,
+            conversation_history: Optional[List[Dict[str, Any]]] = None
     ) -> str:
         """
         Generate AI response using Gemini with RAG and user context.
@@ -131,12 +132,16 @@ class ChatService:
                 user_profile=user_profile,
                 relevant_knowledge=relevant_knowledge,
                 last_food_analysis=last_food_analysis,
+                conversation_history=conversation_history,
                 model_prediction=model_prediction  #removed conversation_history
             )
 
             # Generate response using Gemini
             response = self.gemini_model.generate_content(prompt)  # Use the renamed variable
 
+            # Store conversation in Firebase for future reference
+            await self._store_conversation(username, message, response.text)
+            
             return response.text
 
         except Exception as e:
@@ -195,6 +200,7 @@ class ChatService:
             user_profile: Dict[str, Any],
             relevant_knowledge: List[Dict[str, Any]],
             last_food_analysis: Optional[Dict[str, Any]] = None,
+            conversation_history: Optional[List[Dict[str, Any]]] = None,
             model_prediction: Optional[str] = None  # Add decision tree output to the arguments
     ) -> str:
         """
@@ -249,8 +255,33 @@ The user may be asking questions about this food analysis.
         if model_prediction:
             prompt_parts.append(f"Based on model analysis, the recommended advice category is:\n{model_prediction}")  # Modified Prompt
 
+        # Conversation historyAdd commentMore actions
+        if conversation_history:
+            history_context = "Recent conversation:\n"
+            for msg in conversation_history[-5:]:  # Last 5 messages
+                role = "User" if msg.get('role') == 'user' else "Assistant"
+                history_context += f"{role}: {msg.get('content', '')}\n"
+            prompt_parts.append(history_context)
+
         # Current user message
         prompt_parts.append(f"\nUser's current message: {message}")
         prompt_parts.append("\nProvide a helpful, personalized response:")
 
         return "\n".join(prompt_parts)
+    
+    async def _store_conversation(self, username: str, user_message: str, ai_response: str):
+        """
+        Store conversation in Firebase for future reference.
+        """
+        try:
+            conversation_data = {
+                "username": username,
+                "user_message": user_message,
+                "ai_response": ai_response,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            await self.firebase_service.store_conversation(conversation_data)
+            
+        except Exception as e:
+            logger.error(f"Error storing conversation: {str(e)}")

@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         message,
         username,
-        last_food_analysis: lastFoodAnalysis
+        last_food_analysis: lastFoodAnalysis,
+        conversation_history: conversationHistory
       }),
     })
 
