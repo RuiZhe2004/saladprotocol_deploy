@@ -34,4 +34,6 @@ __pycache__/
 
 # Ignore venvs created by virtualenv
 venv
->>>>>>> 6d2c524a13ccb2b03c95c92949fa69a5d1f55776
+
+# Firebase service account key
+firebase_credentials.json
