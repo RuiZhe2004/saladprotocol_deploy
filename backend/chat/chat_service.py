@@ -16,6 +16,17 @@ from sklearn.compose import ColumnTransformer
 logger = logging.getLogger(__name__)
 DT_Model = "C:\\Users\\ruizh\\OneDrive\\Desktop\\SaladProtocol_v2\\backend\\chat\\inference_engine_model.joblib"
 
+# Define RULE_TYPES here, or import it if defined elsewhere.
+RULE_TYPES = [  #  Copied from train_inference_engine.py
+    "weight_loss", "muscle_gain", "general_health", "specific_nutrient_recommendation",
+    "ask_for_more_information", "hydration_recommendation", "sleep_improvement",
+    "stress_management_nutrition", "energy_boosting_foods", "skin_health_nutrition",
+    "digestive_health", "immune_boosting", "bone_health", "eye_health_nutrition",
+    "brain_health", "hair_health_nutrition", "pregnancy", "diabetes",
+    "high_cholesterol", "low_blood_pressure", "kidney_issues", "anxiety",
+]
+
+
 class ChatService:
     def __init__(self, firebase_service, vector_service):
         self.firebase_service = firebase_service
@@ -23,8 +34,8 @@ class ChatService:
 
         # Load the Pipeline model
         self.model_components = self._load_model_components(DT_Model)
-        self.pipeline = self.model_components['pipeline']
-        self.rule_types = self.model_components['rule_types']  # Access RULE_TYPES from loaded components
+        self.pipeline = self.model_components.get('pipeline') # Use .get to avoid KeyError
+        self.rule_types = self.model_components.get('rule_types', RULE_TYPES)  # Access RULE_TYPES from loaded components, default to RULE_TYPES if not found
 
         # Configure Gemini
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -35,9 +46,6 @@ class ChatService:
         try:
             model_components = joblib.load(model_path)
             logger.info(f"Model components successfully loaded from {model_path}")
-
-            if model_components['pipeline']:  # Check if pipeline is loaded
-                print("Pipeline steps after loading:", model_components['pipeline'].steps) #Check if there are fitted steps
 
             return model_components
 
@@ -84,8 +92,11 @@ class ChatService:
             #Ensure right order of columns for the dataframe
             dummy_data = dummy_data[['message', 'user_age', 'bmi']]
 
+            # Dummy target data
+            dummy_target = [0]  # Example: the first class
+
             try:
-                pipeline.fit(dummy_data)
+                pipeline.fit(dummy_data, dummy_target) #Pass target data now
                 logger.info("Successfully fitted the default pipeline.")
             except Exception as fit_err:
                 logger.error(f"Failed to fit the default pipeline: {fit_err}")
@@ -93,14 +104,14 @@ class ChatService:
 
             return {
                 'pipeline': pipeline,
-                'rule_types': ["general_health"] #Set a default rul_type
+                'rule_types': RULE_TYPES #Set a default rul_type
             }
 
         except Exception as e:
             logger.error(f"Error creating default model: {e}")
             return {  # Return a minimal, non-functional model to avoid cascading errors
                 'pipeline': None,
-                'rule_types': ["general_health"]
+                'rule_types': RULE_TYPES
             }
 
     async def get_response(
@@ -133,7 +144,7 @@ class ChatService:
                 relevant_knowledge=relevant_knowledge,
                 last_food_analysis=last_food_analysis,
                 conversation_history=conversation_history,
-                model_prediction=model_prediction 
+                model_prediction=model_prediction
             )
 
             # Generate response using Gemini
@@ -165,7 +176,7 @@ class ChatService:
         df = pd.DataFrame(data)
 
         # Ensure right order of columns for the dataframe and matching training
-        df = df[['user_age', 'bmi', 'message']]
+        df = df[['message', 'user_age', 'bmi']]
 
         #Print data types BEFORE the next if statement
         print("Data types in _prepare_model_features:\n", df.dtypes)
@@ -269,7 +280,7 @@ The user may be asking questions about this food analysis.
         prompt_parts.append("\nProvide a helpful, personalized response:")
 
         return "\n".join(prompt_parts)
-    
+
     async def _store_conversation(self, username: str, user_message: str, ai_response: str):
         """
         Store conversation in Firebase for future reference.
@@ -281,8 +292,8 @@ The user may be asking questions about this food analysis.
                 "ai_response": ai_response,
                 "timestamp": datetime.datetime.now().isoformat()
             }
-            
+
             await self.firebase_service.store_conversation(conversation_data)
-            
+
         except Exception as e:
             logger.error(f"Error storing conversation: {str(e)}")
