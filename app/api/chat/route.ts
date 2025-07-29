@@ -5,11 +5,17 @@ export async function POST(request: NextRequest) {
     const { message, username, lastFoodAnalysis, conversationHistory } = await request.json()
 
     if (!message || !username) {
-      return NextResponse.json({ error: "Message and username are required" }, { status: 400 })
+      console.error("Message and username are required");
+      return NextResponse.json({ error: "Message and username are required" }, { status: 400 });
     }
 
+    // Construct the backend URL
+    const backendUrl = `${process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL}/chat`;
+
+    console.log(`Calling backend at: ${backendUrl}`);
+
     // Call Python backend for chat response
-    const backendResponse = await fetch(`${process.env.PYTHON_BACKEND_URL}/chat`, {
+    const backendResponse = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -20,19 +26,22 @@ export async function POST(request: NextRequest) {
         last_food_analysis: lastFoodAnalysis,
         conversation_history: conversationHistory,
       }),
-    })
+    });
 
-    const data = await backendResponse.json()
+    const data = await backendResponse.json();
+
+    console.log("Backend response:", data);
 
     if (backendResponse.ok) {
       return NextResponse.json({
         response: data.response,
-      })
+      });
     } else {
-      return NextResponse.json({ error: data.error || "Chat failed" }, { status: backendResponse.status })
+      console.error("Backend returned an error:", data);
+      return NextResponse.json({ error: data.error || "Chat failed" }, { status: backendResponse.status });
     }
-  } catch (error) {
-    console.error("Chat API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } catch (error: any) {
+    console.error("Chat API error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
