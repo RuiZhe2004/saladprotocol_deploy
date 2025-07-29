@@ -14,7 +14,7 @@ from sklearn.pipeline import Pipeline #Import Pipeline
 from sklearn.compose import ColumnTransformer
 
 logger = logging.getLogger(__name__)
-DT_Model = "C:\\Users\\ruizh\\OneDrive\\Desktop\\SaladProtocol_v2\\backend\\chat\\inference_engine_model.joblib"
+DT_Model = DT_Model = "chat/inference_engine_model.joblib"
 
 # Define RULE_TYPES here, or import it if defined elsewhere.
 RULE_TYPES = [  #  Copied from train_inference_engine.py
