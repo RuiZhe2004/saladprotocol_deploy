@@ -2,34 +2,43 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const image = formData.get("image") as File
-    const username = formData.get("username") as string
+    const formData = await request.formData();
+    const image = formData.get("image") as File;
+    const username = formData.get("username") as string;
 
     if (!image || !username) {
-      return NextResponse.json({ error: "Image and username are required" }, { status: 400 })
+      console.error("Image and username are required");
+      return NextResponse.json({ error: "Image and username are required" }, { status: 400 });
     }
+
+     // Construct the backend URL
+    const backendUrl = `${process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL}/food/analyze`;
+
+    console.log(`Calling backend at: ${backendUrl}`);
 
     // Create FormData for Python backend
-    const backendFormData = new FormData()
-    backendFormData.append("image", image)
-    backendFormData.append("username", username)
+    const backendFormData = new FormData();
+    backendFormData.append("image", image);
+    backendFormData.append("username", username);
 
     // Call Python backend for food analysis
-    const backendResponse = await fetch(`${process.env.PYTHON_BACKEND_URL}/food/analyze`, {
+    const backendResponse = await fetch(backendUrl, {
       method: "POST",
       body: backendFormData,
-    })
+    });
 
-    const data = await backendResponse.json()
+    const data = await backendResponse.json();
+
+    console.log("Backend response:", data);
 
     if (backendResponse.ok) {
-      return NextResponse.json(data)
+      return NextResponse.json(data);
     } else {
-      return NextResponse.json({ error: data.error || "Food analysis failed" }, { status: backendResponse.status })
+      console.error("Backend returned an error:", data);
+      return NextResponse.json({ error: data.error || "Food analysis failed" }, { status: backendResponse.status });
     }
-  } catch (error) {
-    console.error("Food analysis API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } catch (error: any) {
+    console.error("Food analysis API error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
