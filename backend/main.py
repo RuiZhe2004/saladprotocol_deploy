@@ -18,7 +18,7 @@ from database.firebase_service import FirebaseService
 from vector_db.vector_service import VectorService
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)  # Changed to DEBUG
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Salad Protocol Backend", version="1.0.0")
@@ -26,7 +26,7 @@ app = FastAPI(title="Salad Protocol Backend", version="1.0.0")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["*"],  # Changed to allow all origins for testing
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,12 +70,14 @@ async def health_check():
 # Authentication endpoints
 @app.post("/auth/login", response_model=LoginResponse)
 async def login(request: LoginRequest):
+    logger.debug(f"Login attempt for user: {request.username}")  # Log the incoming username
     try:
         result = await auth_service.login(request.username)
+        logger.debug(f"Login successful for user: {request.username}. Result: {result}")  # Log successful login
         return LoginResponse(**result)
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception(f"Login error for user {request.username}: {str(e)}")  # Log full exception info
+        raise HTTPException(status_code=500, detail=str(e))  # Return the original exception detail
 
 @app.post("/auth/setup-profile")
 async def setup_profile(request: ProfileSetupRequest):
