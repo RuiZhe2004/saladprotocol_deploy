@@ -11,8 +11,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Image and username are required" }, { status: 400 });
     }
 
-     // Construct the backend URL
-    const backendUrl = `${process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL}/food/analyze`;
+    // Construct the backend URL
+    const backendUrl = process.env.NEXT_PUBLIC_MODEL_URL;
+
+    if (!backendUrl) {
+      console.error("NEXT_PUBLIC_MODEL_URL is not defined in Vercel environment variables.");
+      return NextResponse.json({ error: "Internal server error: NEXT_PUBLIC_MODEL_URL not set" }, { status: 500 });
+    }
 
     console.log(`Calling backend at: ${backendUrl}`);
 
