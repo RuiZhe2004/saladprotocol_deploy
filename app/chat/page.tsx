@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Salad, Camera, Send, User, Bot, LogOut, Loader2,X } from "lucide-react"
+import { Salad, Camera, Send, User, Bot, LogOut, Loader2, X } from "lucide-react"
 
 interface Message {
   id: string
@@ -17,7 +16,7 @@ interface Message {
   timestamp: Date
   foodAnalysis?: any
   imageUrl?: string
-  fileName?: string 
+  fileName?: string
 }
 
 interface FoodAnalysis {
@@ -36,6 +35,7 @@ interface FoodAnalysis {
   total_fat: number
   confidence_score?: number
 }
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -46,9 +46,9 @@ export default function ChatPage() {
   const [lastFoodAnalysis, setLastFoodAnalysis] = useState<FoodAnalysis | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function ChatPage() {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file)
-      
+
       // Create and set the preview URL
       const objectUrl = URL.createObjectURL(file)
       setPreviewUrl(objectUrl)
@@ -110,18 +110,18 @@ export default function ChatPage() {
   }
 
   const openImageModal = () => {
-  setIsModalOpen(true);
-  };
+    setIsModalOpen(true)
+  }
 
   // Add this function to close the modal
   const closeImageModal = () => {
-    setIsModalOpen(false);
-    setModalImageUrl(null);
-  };
+    setIsModalOpen(false)
+    setModalImageUrl(null)
+  }
 
   const handleImageModal = (url: string) => {
-  setModalImageUrl(url);
-};
+    setModalImageUrl(url)
+  }
 
   const analyzeFoodImage = async () => {
     if (!selectedFile) return
@@ -135,50 +135,39 @@ export default function ChatPage() {
       const response = await fetch("/api/food/analyze", {
         method: "POST",
         body: formData,
-      });
+      })
 
       if (!response.ok) {
-        //If resposne is not "ok" then reject it.
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        //If response is not "ok" then reject it.
+        throw new Error(`HTTP error! Status: ${response.status}`)
       }
 
-      const analysis = await response.json();
-      // Add food analysis message & image
-      const analysisMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
-          .map(
-            (item: any) =>
-              `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
-          )
-          .join(
-            "<br/><br/>",
-          )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
-        timestamp: new Date(),
-        foodAnalysis: analysis,
-        imageUrl: analysis.image_url || "",
-        fileName: selectedFile.name,
-      };
+      const data = await response.json()
+        console.log("Raw analysis data:", data);
 
-      setMessages((prev) => [...prev, analysisMessage]);
-      setSelectedFile(null);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      setPreviewUrl(null);
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+        if (data && data.predicted_class && data.confidence) {
+            const analysisMessage: Message = {
+                id: Date.now().toString(),
+                role: "assistant",
+                content: `I've analyzed your food image! I found: <strong>${data.predicted_class}</strong> with confidence ${data.confidence}`,
+                timestamp: new Date(),
+                foodAnalysis: data,  // Store the raw data for now
+                imageUrl: "",
+                fileName: selectedFile.name,
+            };
+            setMessages((prev) => [...prev, analysisMessage]);
+        } else {
+            console.warn("Unexpected data format from API:", data);
+            alert("Failed to analyze image: Unexpected data format. Please try again.");
+        }
 
     } catch (error) {
-      console.error("Food analysis error:", error);
-      alert("Failed to analyze image. Please try again.");
+      console.error("Food analysis error:", error)
+      alert("Failed to analyze image. Please try again.")
     } finally {
-      setIsAnalyzing(false);
+      setIsAnalyzing(false)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
