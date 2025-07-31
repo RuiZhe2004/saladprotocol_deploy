@@ -135,51 +135,50 @@ export default function ChatPage() {
       const response = await fetch("/api/food/analyze", {
         method: "POST",
         body: formData,
-      })
+      });
 
-      const analysis = await response.json()
-
-      if (response.ok && analysis && Array.isArray(analysis.food_items)) {
-        setLastFoodAnalysis(analysis)
-
-        // Add food analysis message & image
-        const analysisMessage: Message = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
-            .map(
-              (item: any) =>
-                `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
-            )
-            .join(
-              "<br/><br/>",
-            )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
-          timestamp: new Date(),
-          foodAnalysis: analysis,
-          imageUrl: analysis.image_url || "",
-          fileName: selectedFile.name,
-        }
-
-        setMessages((prev) => [...prev, analysisMessage])
-        setSelectedFile(null)
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl)
-        }
-        setPreviewUrl(null)
-        setSelectedFile(null)
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-      } else {
-        alert("Failed to analyze image. Please try again.")
+      if (!response.ok) {
+        //If resposne is not "ok" then reject it.
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      const analysis = await response.json();
+      // Add food analysis message & image
+      const analysisMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
+          .map(
+            (item: any) =>
+              `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
+          )
+          .join(
+            "<br/><br/>",
+          )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
+        timestamp: new Date(),
+        foodAnalysis: analysis,
+        imageUrl: analysis.image_url || "",
+        fileName: selectedFile.name,
+      };
+
+      setMessages((prev) => [...prev, analysisMessage]);
+      setSelectedFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
     } catch (error) {
-      console.error("Food analysis error:", error)
-      alert("An error occurred while analyzing the image.")
+      console.error("Food analysis error:", error);
+      alert("Failed to analyze image. Please try again.");
     } finally {
-      setIsAnalyzing(false)
+      setIsAnalyzing(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
