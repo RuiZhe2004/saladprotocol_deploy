@@ -15,7 +15,7 @@ interface Message {
   role: "user" | "assistant"
   content: string
   timestamp: Date
-  foodAnalysis?: any
+  foodAnalysis?: FoodAnalysis | null; // Allow null
   imageUrl?: string
   fileName?: string
 }
@@ -144,35 +144,37 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-        console.log("Raw analysis data:", data);
+      console.log("Raw analysis data:", data);
 
-        const transformedAnalysis: FoodAnalysis = {
-            food_items: [{
-                name: data.predicted_class || "unknown",
-                calories: 0, // replace with actual if you have
-                protein: 0,   // replace with actual if you have
-                carbs: 0,     // replace with actual if you have
-                fat: 0,       // replace with actual if you have
-                portion_size: "100g",
-                confidence: data.confidence,
-            }],
-            total_calories: 0, // replace with actual if you have
-            total_protein: 0,  // replace with actual if you have
-            total_carbs: 0,    // replace with actual if you have
-            total_fat: 0,      // replace with actual if you have
-            confidence_score: data.confidence,
-        };
+          // Construct the transformedAnalysis object directly from the response data
+          const transformedAnalysis: FoodAnalysis = {
+              food_items: [{
+                  name: data.predicted_class || "unknown",
+                  calories: data.nutrition?.calories || 0,
+                  protein: data.nutrition?.protein || 0,
+                  carbs: data.nutrition?.carbs || 0,
+                  fat: data.nutrition?.fat || 0,
+                  portion_size: data.nutrition?.portion_size || "100g",
+                  confidence: data.confidence,
+              }],
+              total_calories: data.nutrition?.calories || 0,
+              total_protein: data.nutrition?.protein || 0,
+              total_carbs: data.nutrition?.carbs || 0,
+              total_fat: data.nutrition?.fat || 0,
+              confidence_score: data.confidence,
+          };
 
-            const analysisMessage: Message = {
-                id: Date.now().toString(),
-                role: "assistant",
-                content: `I've analyzed your food image! I found: <strong>${transformedAnalysis.food_items[0].name}</strong> with confidence ${transformedAnalysis.food_items[0].confidence}`,
-                timestamp: new Date(),
-                foodAnalysis: transformedAnalysis, // Use transformed data
-                imageUrl: "",
-                fileName: selectedFile.name,
-            };
-            setMessages((prev) => [...prev, analysisMessage]);
+          const analysisMessage: Message = {
+              id: Date.now().toString(),
+              role: "assistant",
+              content: `I've analyzed your food image! I found: <strong>${transformedAnalysis.food_items[0].name}</strong> with confidence ${transformedAnalysis.food_items[0].confidence}`,
+              timestamp: new Date(),
+              foodAnalysis: transformedAnalysis, // Use the transformed data
+              imageUrl: "",
+              fileName: selectedFile.name,
+          };
+
+          setMessages((prev) => [...prev, analysisMessage]);
       setSelectedFile(null);
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
