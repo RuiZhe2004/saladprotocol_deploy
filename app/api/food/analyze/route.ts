@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
     console.log("Backend response:", data);
 
     if (backendResponse.ok) {
+      //Ensure data is correct to send to frontend
       return NextResponse.json(data);
     } else {
       console.error("Backend returned an error:", data);
