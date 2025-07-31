@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -46,10 +47,10 @@ export default function ChatPage() {
   const [lastFoodAnalysis, setLastFoodAnalysis] = useState<FoodAnalysis | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null)
-  const router = useRouter()
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username")
@@ -135,32 +136,52 @@ export default function ChatPage() {
       const response = await fetch("/api/food/analyze", {
         method: "POST",
         body: formData,
-      })
+      });
 
       if (!response.ok) {
         //If response is not "ok" then reject it.
-        throw new Error(`HTTP error! Status: ${response.status}`)
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
         console.log("Raw analysis data:", data);
 
-        if (data && data.predicted_class && data.confidence) {
+        const transformedAnalysis: FoodAnalysis = {
+            food_items: [{
+                name: data.predicted_class || "unknown",
+                calories: 0, // replace with actual if you have
+                protein: 0,   // replace with actual if you have
+                carbs: 0,     // replace with actual if you have
+                fat: 0,       // replace with actual if you have
+                portion_size: "100g",
+                confidence: data.confidence,
+            }],
+            total_calories: 0, // replace with actual if you have
+            total_protein: 0,  // replace with actual if you have
+            total_carbs: 0,    // replace with actual if you have
+            total_fat: 0,      // replace with actual if you have
+            confidence_score: data.confidence,
+        };
+
             const analysisMessage: Message = {
                 id: Date.now().toString(),
                 role: "assistant",
-                content: `I've analyzed your food image! I found: <strong>${data.predicted_class}</strong> with confidence ${data.confidence}`,
+                content: `I've analyzed your food image! I found: <strong>${transformedAnalysis.food_items[0].name}</strong> with confidence ${transformedAnalysis.food_items[0].confidence}`,
                 timestamp: new Date(),
-                foodAnalysis: data,  // Store the raw data for now
+                foodAnalysis: transformedAnalysis, // Use transformed data
                 imageUrl: "",
                 fileName: selectedFile.name,
             };
             setMessages((prev) => [...prev, analysisMessage]);
-        } else {
-            console.warn("Unexpected data format from API:", data);
-            alert("Failed to analyze image: Unexpected data format. Please try again.");
-        }
-
+      setSelectedFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (error) {
       console.error("Food analysis error:", error)
       alert("Failed to analyze image. Please try again.")
@@ -381,7 +402,7 @@ export default function ChatPage() {
                 <img 
                   src={previewUrl} 
                   alt="Food" 
-                  className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                  className="w-full h-auto rounded-lg object-contain max-h-[70vh]"
                   onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
                 />
                 <button 
@@ -432,7 +453,7 @@ export default function ChatPage() {
               <img
                 src={modalImageUrl}
                 alt="Food"
-                className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                className="w-full h-auto rounded-lg object-contain max-h-[70vh]"
                 onClick={e => e.stopPropagation()}
               />
               <button
