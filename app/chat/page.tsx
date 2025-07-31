@@ -15,7 +15,7 @@ interface Message {
   role: "user" | "assistant"
   content: string
   timestamp: Date
-  foodAnalysis?: FoodAnalysis | null; // Allow null
+  foodAnalysis?: FoodAnalysis | null;
   imageUrl?: string
   fileName?: string
 }
@@ -146,47 +146,54 @@ export default function ChatPage() {
       const data = await response.json();
       console.log("Raw analysis data:", data);
 
-          // Construct the transformedAnalysis object directly from the response data
-          const transformedAnalysis: FoodAnalysis = {
-              food_items: [{
-                  name: data.predicted_class || "unknown",
-                  calories: data.nutrition?.calories || 0,
-                  protein: data.nutrition?.protein || 0,
-                  carbs: data.nutrition?.carbs || 0,
-                  fat: data.nutrition?.fat || 0,
-                  portion_size: data.nutrition?.portion_size || "100g",
-                  confidence: data.confidence,
-              }],
-              total_calories: data.nutrition?.calories || 0,
-              total_protein: data.nutrition?.protein || 0,
-              total_carbs: data.nutrition?.carbs || 0,
-              total_fat: data.nutrition?.fat || 0,
-              confidence_score: data.confidence,
-          };
+      // Construct the transformedAnalysis object directly from the response data
+      const transformedAnalysis: FoodAnalysis = {
+        food_items: [{
+          name: data.predicted_class || "unknown",
+          calories: data.nutrition?.calories || 0,
+          protein: data.nutrition?.protein || 0,
+          carbs: data.nutrition?.carbs || 0,
+          fat: data.nutrition?.fat || 0,
+          portion_size: data.nutrition?.portion_size || "100g",
+          confidence: data.confidence,
+        }],
+        total_calories: data.nutrition?.calories || 0,
+        total_protein: data.nutrition?.protein || 0,
+        total_carbs: data.nutrition?.carbs || 0,
+        total_fat: data.nutrition?.fat || 0,
+        confidence_score: data.confidence,
+      };
 
-          const analysisMessage: Message = {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: `I've analyzed your food image! I found: <strong>${transformedAnalysis.food_items[0].name}</strong> with confidence ${transformedAnalysis.food_items[0].confidence}`,
-              timestamp: new Date(),
-              foodAnalysis: transformedAnalysis, // Use the transformed data
-              imageUrl: "",
-              fileName: selectedFile.name,
-          };
+      const analysisMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `I've analyzed your food image! Here's what I found:<br/><br/>${transformedAnalysis.food_items
+          .map(
+            (item: any) =>
+              `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
+          )
+          .join(
+            "<br/><br/>",
+          )}<br/><br/><strong>Total:</strong> ${transformedAnalysis.total_calories} calories, ${transformedAnalysis.total_protein}g protein, ${transformedAnalysis.total_carbs}g carbs, ${transformedAnalysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
+        timestamp: new Date(),
+        foodAnalysis: transformedAnalysis,
+        imageUrl: "",
+        fileName: selectedFile.name,
+      };
 
-          setMessages((prev) => [...prev, analysisMessage]);
-      setSelectedFile(null);
+      setMessages((prev) => [...prev, analysisMessage])
+      setSelectedFile(null)
       if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+        URL.revokeObjectURL(previewUrl)
       }
-      setPreviewUrl(null);
-      setSelectedFile(null);
+      setPreviewUrl(null)
+      setSelectedFile(null)
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value = ""
       }
     } catch (error) {
       console.error("Food analysis error:", error)
-      alert("Failed to analyze image. Please try again.")
+      alert("An error occurred while analyzing the image.")
     } finally {
       setIsAnalyzing(false)
     }
@@ -404,7 +411,7 @@ export default function ChatPage() {
                 <img 
                   src={previewUrl} 
                   alt="Food" 
-                  className="w-full h-auto rounded-lg object-contain max-h-[70vh]"
+                  className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
                   onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
                 />
                 <button 
@@ -455,7 +462,7 @@ export default function ChatPage() {
               <img
                 src={modalImageUrl}
                 alt="Food"
-                className="w-full h-auto rounded-lg object-contain max-h-[70vh]"
+                className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
                 onClick={e => e.stopPropagation()}
               />
               <button
