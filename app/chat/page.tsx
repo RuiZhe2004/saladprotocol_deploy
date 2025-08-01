@@ -136,15 +136,14 @@ export default function ChatPage() {
         method: "POST",
         body: formData,
       });
+
       if (!response.ok) {
-        //If response is not "ok" then reject it.
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
         console.log("Raw analysis data:", data);
 
-        // Construct the transformedAnalysis object directly from the response data
         const transformedAnalysis: FoodAnalysis = {
             food_items: [{
                 name: data.predicted_class || "unknown",
@@ -162,40 +161,41 @@ export default function ChatPage() {
             confidence_score: data.confidence || 0
         };
 
+          const { food_items, total_calories, total_protein, total_carbs, total_fat } = transformedAnalysis;
+
         const analysisMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
-            content: `I've analyzed your food image! I found: <strong>${transformedAnalysis.food_items[0].name}</strong> with confidence ${transformedAnalysis.food_items[0].confidence}
-        <br/>Calories: ${transformedAnalysis.total_calories} cal | Protein: ${transformedAnalysis.total_protein}g | Carbs: ${transformedAnalysis.total_carbs}g | Fat: ${transformedAnalysis.total_fat}g`,
-
+            content: `I've analyzed your food image! Here's what I found: <strong>${food_items[0].name} (${food_items[0].portion_size})</strong><br/>
+          Calories: ${food_items[0].calories} | Protein: ${food_items[0].protein}g | Carbs: ${food_items[0].carbs}g | Fat: ${food_items[0].fat}g<br/><br/>
+          <strong>Total:</strong> ${total_calories} calories, ${total_protein}g protein, ${total_carbs}g carbs, ${total_fat}g fat<br/><br/>
+          Feel free to ask me any questions about this meal!`,
             timestamp: new Date(),
-            foodAnalysis: transformedAnalysis, // Use the transformed data
+            foodAnalysis: transformedAnalysis,
             imageUrl: "",
             fileName: selectedFile.name,
         };
 
-        setMessages((prev) => [...prev, analysisMessage]);
+          setMessages((prev) => [...prev, analysisMessage]);
+        setLastFoodAnalysis(transformedAnalysis);
 
-         setLastFoodAnalysis(transformedAnalysis);
-
-          // Clear form
-          setSelectedFile(null);
-          if (previewUrl) {
-            URL.revokeObjectURL(previewUrl);
-          }
-          setPreviewUrl(null);
-          setSelectedFile(null);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     } catch (error) {
-      console.error("Food analysis error:", error);
-      alert("Failed to analyze image. Please try again.");
+      console.error("Food analysis error:", error)
+      alert("Failed to analyze image. Please try again.")
     } finally {
-      setIsAnalyzing(false);
+      setIsAnalyzing(false)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -410,20 +410,118 @@ export default function ChatPage() {
                   src={previewUrl} 
                   alt="Food" 
                   className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
-                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
-                />
-                <button 
-                  className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    closeImageModal();
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                  onClick={(e) => e.stopPropagation()}
+              />
+                            </div>
+                        </div>
+                    )}
+                    <div className="whitespace-pre-wrap text-sm" dangerouslySetInnerHTML={{ __html: message.content }} />
+                    {message.foodAnalysis && (
+                      <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div className="text-xs text-green-600 font-medium mb-2">Food Analysis Data</div>
+                        <div className="text-xs text-green-700">
+                          Total: {message.foodAnalysis.total_calories} cal | P: {message.foodAnalysis.total_protein}g |
+                          C: {message.foodAnalysis.total_carbs}g | F: {message.foodAnalysis.total_fat}g
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-emerald-500">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="p-4 rounded-lg bg-white border border-green-200">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-green-500" />
+                      <span className="text-sm text-green-600">Thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </CardContent>
+
+          {/* Food Image Upload */}
+          {selectedFile && (
+            <div className="px-6 py-3 border-t border-green-200 bg-green-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {previewUrl && (
+                    <div 
+                      className="h-12 w-12 rounded-md overflow-hidden border border-green-300 cursor-pointer"
+                      onClick={openImageModal}
+                    >
+                      <img 
+                        src={previewUrl} 
+                        alt="Food preview" 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-sm text-green-700">{selectedFile.name}</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={clearSelectedFile}
+                    className="border-green-300 text-green-700"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={analyzeFoodImage}
+                    disabled={isAnalyzing}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      "Analyze Food"
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
+
+          {/* Image Modal */}
+          {isModalOpen && previewUrl && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+              onClick={closeImageModal}
+            >
+              <div className="relative max-w-md max-h-[70vh] w-full mx-4">
+                <img 
+                  src={previewUrl} 
+                  alt="Food" 
+                  className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                            <button 
+                                className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    closeImageModal();
+                                }}
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
           {/* Input Area */}
           <div className="p-6 border-t border-green-200 bg-white">
