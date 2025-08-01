@@ -48,7 +48,6 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -116,11 +115,6 @@ export default function ChatPage() {
   // Add this function to close the modal
   const closeImageModal = () => {
     setIsModalOpen(false)
-    setModalImageUrl(null)
-  }
-
-  const handleImageModal = (url: string) => {
-    setModalImageUrl(url)
   }
 
   const analyzeFoodImage = async () => {
@@ -313,7 +307,7 @@ export default function ChatPage() {
                           src={message.imageUrl}
                           alt="uploaded food"
                           className="w-40 sm:w-48 md:w-56 h-auto rounded-md border border-green-200 cursor-pointer object-cover"
-                          onClick={() => handleImageModal(message.imageUrl!)}
+                          onClick={openImageModal}
                         />
                       </div>
                     )}
@@ -411,105 +405,7 @@ export default function ChatPage() {
                   alt="Food" 
                   className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
                   onClick={(e) => e.stopPropagation()}
-              />
-                            </div>
-                        </div>
-                    )}
-                    <div className="whitespace-pre-wrap text-sm" dangerouslySetInnerHTML={{ __html: message.content }} />
-                    {message.foodAnalysis && (
-                      <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div className="text-xs text-green-600 font-medium mb-2">Food Analysis Data</div>
-                        <div className="text-xs text-green-700">
-                          Total: {message.foodAnalysis.total_calories} cal | P: {message.foodAnalysis.total_protein}g |
-                          C: {message.foodAnalysis.total_carbs}g | F: {message.foodAnalysis.total_fat}g
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-full bg-emerald-500">
-                    <Bot className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="p-4 rounded-lg bg-white border border-green-200">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-green-500" />
-                      <span className="text-sm text-green-600">Thinking...</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </CardContent>
-
-          {/* Food Image Upload */}
-          {selectedFile && (
-            <div className="px-6 py-3 border-t border-green-200 bg-green-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {previewUrl && (
-                    <div 
-                      className="h-12 w-12 rounded-md overflow-hidden border border-green-300 cursor-pointer"
-                      onClick={openImageModal}
-                    >
-                      <img 
-                        src={previewUrl} 
-                        alt="Food preview" 
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-sm text-green-700">{selectedFile.name}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={clearSelectedFile}
-                    className="border-green-300 text-green-700"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={analyzeFoodImage}
-                    disabled={isAnalyzing}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      "Analyze Food"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Image Modal */}
-          {isModalOpen && previewUrl && (
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-              onClick={closeImageModal}
-            >
-              <div className="relative max-w-md max-h-[70vh] w-full mx-4">
-                <img 
-                  src={previewUrl} 
-                  alt="Food" 
-                  className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
-                  onClick={(e) => e.stopPropagation()}
-                />
+                            />
                             <button 
                                 className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
                                 onClick={(e) => {
@@ -549,30 +445,6 @@ export default function ChatPage() {
             </form>
           </div>
         </Card>
-        {modalImageUrl && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-            onClick={closeImageModal}
-          >
-            <div className="relative max-w-md max-h-[70vh] w-full mx-4">
-              <img
-                src={modalImageUrl}
-                alt="Food"
-                className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
-                onClick={e => e.stopPropagation()}
-              />
-              <button
-                className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
-                onClick={e => {
-                  e.stopPropagation();
-                  closeImageModal();
-                }}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
