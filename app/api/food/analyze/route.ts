@@ -1,125 +1,36 @@
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-import os
-import numpy as np
-from PIL import Image
-import io
-import json
-import logging
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
-import requests
-from io import BytesIO
+import { type NextRequest, NextResponse } from "next/server"
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData()
+    const image = formData.get("image") as File
+    const username = formData.get("username") as string
 
-app = FastAPI(title="Food Recognition Model API", version="1.0.0")
+    if (!image || !username) {
+      return NextResponse.json({ error: "Image and username are required" }, { status: 400 })
+    }
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    // Create FormData for Python backend
+    const backendFormData = new FormData()
+    backendFormData.append("image", image)
+    backendFormData.append("username", username)
 
-# Get the directory where this script is located
-current_dir = os.path.dirname(os.path.abspath(__file__))
+    // Call Python backend for food analysis
+    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_MODEL_URL}/analyze`, {
+      method: "POST",
+      body: backendFormData,
+    })
 
-# Load your trained model using relative paths
-model_path = os.path.join(current_dir, "food_detection.h5")
-labels_path = os.path.join(current_dir, "class_labels.json")
+    const data = await backendResponse.json()
 
-# Log the paths to help with debugging
-logger.info(f"Loading model from: {model_path}")
-logger.info(f"Loading labels from: {labels_path}")
-
-# Load model and labels
-model = load_model(model_path)
-
-# Load class labels
-with open(labels_path, "r") as f:
-    class_labels = json.load(f)
-class_labels = {int(k): v for k, v in class_labels.items()}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "model": "food_recognition_v1"}
-
-@app.post("/analyze")
-async def analyze_food_image(image: UploadFile = File(...)):
-    """
-    Analyze food image and return predicted class and confidence.
-    """
-    try:
-        if not image.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="File must be an image")
-
-        image_data = await image.read()
-        pil_image = Image.open(io.BytesIO(image_data)).convert('RGB')
-        processed_image = preprocess_image(pil_image)
-        predictions = model.predict(processed_image)
-        predicted_index = int(np.argmax(predictions[0]))
-        predicted_class = class_labels[predicted_index]
-        confidence = float(np.max(predictions[0]))
-
-        return {
-            "predicted_class": predicted_class,
-            "confidence": confidence
-        }
-
-    except Exception as e:
-        logger.error(f"Food analysis error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/predict")
-async def predict_image(url: str = Query(..., description="Image URL to classify")):
-    """
-    Predict food class from an image URL.
-    """
-    try:
-        img = preprocess_image_from_url(url)
-        predictions = model.predict(img)
-        predicted_index = int(np.argmax(predictions[0]))
-        predicted_class = class_labels[predicted_index]
-        confidence = float(np.max(predictions[0]))
-
-        return {
-            "predicted_class": predicted_class,
-            "confidence": confidence
-        }
-
-    except Exception as e:
-        logger.error(f"Prediction error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-def preprocess_image(image: Image.Image) -> np.ndarray:
-    """
-    Preprocess PIL image for model inference.
-    """
-    image = image.resize((224, 224))
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
-    image_array = np.array(image) / 255.0
-    image_array = np.expand_dims(image_array, axis=0)
-    return image_array
-
-def preprocess_image_from_url(url: str) -> np.ndarray:
-    """
-    Preprocess image from URL for model inference.
-    """
-    response = requests.get(url)
-    response.raise_for_status()
-    img = Image.open(BytesIO(response.content)).convert('RGB')
-    img = img.resize((224, 224))
-    img_array = image.img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    if (backendResponse.ok) {
+      return NextResponse.json(data)
+    } else {
+      return NextResponse.json({ error: data.error || "Food analysis failed" }, { status: backendResponse.status })
+    }
+  } catch (error) {
+    console.error("Food analysis API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
