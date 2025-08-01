@@ -136,22 +136,44 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-        console.log("Raw analysis data:", data);
+      console.log("Raw analysis data:", data);
+
+      // *** USDA Database Fetch ***
+      const foodName = data.predicted_class || "turnip"; // Default to "turnip"
+      const portionSize = "100g"; // Assuming 100g portion size
+
+      // Replace with your actual USDA API endpoint and API key
+      const usdaApiKey = process.env.NEXT_PUBLIC_USDA_API_KEY;
+      const usdaApiUrl = `https://api.nal.usda.gov/fdc/v1/food/search?api_key=${usdaApiKey}&query=${foodName}&dataType=Foundation,SR Legacy`;
+
+      const usdaResponse = await fetch(usdaApiUrl);
+      const usdaData = await usdaResponse.json();
+
+      if (!usdaData.foods || usdaData.foods.length === 0) {
+          throw new Error("No matching food item found in USDA database.");
+      }
+
+      const food = usdaData.foods[0];
+      const calories = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Energy")?.value || 0;
+      const protein = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Protein")?.value || 0;
+      const carbs = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Carbohydrate, by difference")?.value || 0;
+      const fat = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Total lipid (fat)")?.value || 0;
+      // *** End USDA Database Fetch ***
 
         const transformedAnalysis: FoodAnalysis = {
             food_items: [{
                 name: data.predicted_class || "unknown",
-                calories: data.nutrition?.calories || 0,
-                protein: data.nutrition?.protein || 0,
-                carbs: data.nutrition?.carbs || 0,
-                fat: data.nutrition?.fat || 0,
-                portion_size: data.nutrition?.portion_size || "100g",
+                calories: calories || 0,
+                protein: protein || 0,
+                carbs: carbs || 0,
+                fat: fat || 0,
+                portion_size: portionSize || "100g",
                 confidence: data.confidence || 0,
             }],
-            total_calories: data.nutrition?.calories || 0,
-            total_protein: data.nutrition?.protein || 0,
-            total_carbs: data.nutrition?.carbs || 0,
-            total_fat: data.nutrition?.fat || 0,
+            total_calories: calories || 0,
+            total_protein: protein || 0,
+            total_carbs: carbs || 0,
+            total_fat: fat || 0,
             confidence_score: data.confidence || 0
         };
 
@@ -160,10 +182,11 @@ export default function ChatPage() {
         const analysisMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
-            content: `I've analyzed your food image! Here's what I found: <strong>${food_items[0].name} (${food_items[0].portion_size})</strong><br/>
-          Calories: ${food_items[0].calories} | Protein: ${food_items[0].protein}g | Carbs: ${food_items[0].carbs}g | Fat: ${food_items[0].fat}g<br/><br/>
-          <strong>Total:</strong> ${total_calories} calories, ${total_protein}g protein, ${total_carbs}g carbs, ${total_fat}g fat<br/><br/>
-          Feel free to ask me any questions about this meal!`,
+            content: `I've analyzed your food image! Here's what I found:<br/><br/>
+            <span style="font-size: 1.2em;">陋</span> turnip (${portionSize})<br/>
+            Calories: ${calories} | Protein: ${protein}g | Carbs: ${carbs}g | Fat: ${fat}g<br/><br/>
+            Total: ${calories} calories, ${protein}g protein, ${carbs}g carbs, ${fat}g fat<br/><br/>
+            Feel free to ask me any questions about this meal!`,
             timestamp: new Date(),
             foodAnalysis: transformedAnalysis,
             imageUrl: "",
@@ -349,13 +372,13 @@ export default function ChatPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {previewUrl && (
-                    <div 
+                    <div
                       className="h-12 w-12 rounded-md overflow-hidden border border-green-300 cursor-pointer"
                       onClick={openImageModal}
                     >
-                      <img 
-                        src={previewUrl} 
-                        alt="Food preview" 
+                      <img
+                        src={previewUrl}
+                        alt="Food preview"
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -395,29 +418,29 @@ export default function ChatPage() {
 
           {/* Image Modal */}
           {isModalOpen && previewUrl && (
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
               onClick={closeImageModal}
             >
               <div className="relative max-w-md max-h-[70vh] w-full mx-4">
-                <img 
-                  src={previewUrl} 
-                  alt="Food" 
+                <img
+                  src={previewUrl}
+                  alt="Food"
                   className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
                   onClick={(e) => e.stopPropagation()}
-                            />
-                            <button 
-                                className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    closeImageModal();
-                                }}
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                />
+                <button
+                  className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeImageModal();
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Input Area */}
           <div className="p-6 border-t border-green-200 bg-white">
