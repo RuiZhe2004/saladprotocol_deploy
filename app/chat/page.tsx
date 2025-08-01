@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -132,7 +133,7 @@ export default function ChatPage() {
     formData.append("username", username)
 
     try {
-      const response = await fetch("/api/food", {
+      const response = await fetch("/api/food/analyze", {
         method: "POST",
         body: formData,
       })
