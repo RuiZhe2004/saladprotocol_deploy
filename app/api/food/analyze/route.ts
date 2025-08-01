@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     backendFormData.append("username", username)
 
     // Call Python backend for food analysis
-    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_MODEL_URL}/analyze`, {
+    const backendResponse = await fetch(`${process.env.PYTHON_BACKEND_URL}/food/analyze`, {
       method: "POST",
       body: backendFormData,
     })
