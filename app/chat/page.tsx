@@ -135,45 +135,23 @@ export default function ChatPage() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("Raw analysis data:", data);
-
-      // *** USDA Database Fetch ***
-      const foodName = data.predicted_class || "turnip"; // Default to "turnip"
-      const portionSize = "100g"; // Assuming 100g portion size
-
-      // Replace with your actual USDA API endpoint and API key
-      const usdaApiKey = process.env.NEXT_PUBLIC_USDA_API_KEY;
-      const usdaApiUrl = `https://api.nal.usda.gov/fdc/v1/food/search?api_key=${usdaApiKey}&query=${foodName}&dataType=Foundation,SR Legacy`;
-
-      const usdaResponse = await fetch(usdaApiUrl);
-      const usdaData = await usdaResponse.json();
-
-      if (!usdaData.foods || usdaData.foods.length === 0) {
-          throw new Error("No matching food item found in USDA database.");
-      }
-
-      const food = usdaData.foods[0];
-      const calories = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Energy")?.value || 0;
-      const protein = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Protein")?.value || 0;
-      const carbs = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Carbohydrate, by difference")?.value || 0;
-      const fat = food.foodNutrients.find((nutrient: any) => nutrient.nutrientName === "Total lipid (fat)")?.value || 0;
-      // *** End USDA Database Fetch ***
+        const data = await response.json();
+        console.log("Raw analysis data:", data);
 
         const transformedAnalysis: FoodAnalysis = {
             food_items: [{
                 name: data.predicted_class || "unknown",
-                calories: calories || 0,
-                protein: protein || 0,
-                carbs: carbs || 0,
-                fat: fat || 0,
-                portion_size: portionSize || "100g",
+                calories: data.nutrition?.calories || 0,
+                protein: data.nutrition?.protein || 0,
+                carbs: data.nutrition?.carbs || 0,
+                fat: data.nutrition?.fat || 0,
+                portion_size: data.nutrition?.portion_size || "100g",
                 confidence: data.confidence || 0,
             }],
-            total_calories: calories || 0,
-            total_protein: protein || 0,
-            total_carbs: carbs || 0,
-            total_fat: fat || 0,
+            total_calories: data.nutrition?.calories || 0,
+            total_protein: data.nutrition?.protein || 0,
+            total_carbs: data.nutrition?.carbs || 0,
+            total_fat: data.nutrition?.fat || 0,
             confidence_score: data.confidence || 0
         };
 
@@ -183,9 +161,9 @@ export default function ChatPage() {
             id: Date.now().toString(),
             role: "assistant",
             content: `I've analyzed your food image! Here's what I found:<br/><br/>
-            <span style="font-size: 1.2em;">陋</span> turnip (${portionSize})<br/>
-            Calories: ${calories} | Protein: ${protein}g | Carbs: ${carbs}g | Fat: ${fat}g<br/><br/>
-            Total: ${calories} calories, ${protein}g protein, ${carbs}g carbs, ${fat}g fat<br/><br/>
+            <span style="font-size: 1.2em;">陋</span> turnip (${data.nutrition?.portion_size})<br/>
+            Calories: ${data.nutrition?.calories} | Protein: ${data.nutrition?.protein}g | Carbs: ${data.nutrition?.carbs}g | Fat: ${data.nutrition?.fat}g<br/><br/>
+            Total: ${total_calories} calories, ${total_protein}g protein, ${total_carbs}g carbs, ${total_fat}g fat<br/><br/>
             Feel free to ask me any questions about this meal!`,
             timestamp: new Date(),
             foodAnalysis: transformedAnalysis,
