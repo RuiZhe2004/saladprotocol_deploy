@@ -132,7 +132,7 @@ export default function ChatPage() {
     formData.append("username", username)
 
     try {
-      const response = await fetch("/api/food/analyze", {
+      const response = await fetch("/api/food", {
         method: "POST",
         body: formData,
       })
