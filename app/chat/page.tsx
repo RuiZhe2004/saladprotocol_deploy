@@ -193,7 +193,7 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error("Food analysis error:", error)
-      alert("An error occurred while analyzing the image.")
+      alert("Failed to analyze image. Please try again.")
     } finally {
       setIsAnalyzing(false)
     }
