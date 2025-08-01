@@ -1,4 +1,3 @@
-
 "use client"
 
 import type React from "react"
@@ -162,17 +161,17 @@ export default function ChatPage() {
         const analysisMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
-          content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
+          content: `I've analyzed your food image! Here's what I found:<br/><br/>${transformedAnalysis.food_items
             .map(
               (item: any) =>
                 `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
             )
             .join(
               "<br/><br/>",
-            )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
+            )}<br/><br/><strong>Total:</strong> ${transformedAnalysis.total_calories} calories, ${transformedAnalysis.total_protein}g protein, ${transformedAnalysis.total_carbs}g carbs, ${transformedAnalysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
           timestamp: new Date(),
-          foodAnalysis: analysis,
-          imageUrl: analysis.image_url || "",
+          foodAnalysis: transformedAnalysis,
+          imageUrl: data.image_url || "",
           fileName: selectedFile.name,
         }
 
