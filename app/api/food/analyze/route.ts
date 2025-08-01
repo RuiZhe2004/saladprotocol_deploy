@@ -1,4 +1,3 @@
-
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -15,6 +14,9 @@ export async function POST(request: NextRequest) {
     const backendFormData = new FormData()
     backendFormData.append("image", image)
     backendFormData.append("username", username)
+
+    // Log the environment variable (for debugging)
+    console.log("PYTHON_BACKEND_URL:", process.env.PYTHON_BACKEND_URL);
 
     // Call Python backend for food analysis
     const backendResponse = await fetch(`${process.env.PYTHON_BACKEND_URL}/food/analyze`, {
