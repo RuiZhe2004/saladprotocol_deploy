@@ -135,48 +135,32 @@ export default function ChatPage() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-        const data = await response.json();
-        console.log("Raw analysis data:", data);
+      const data = await response.json();
+      console.log("Raw analysis data:", data);
 
-        const transformedAnalysis: FoodAnalysis = {
-            food_items: [{
-                name: data.predicted_class || "unknown",
-                calories: data.nutrition?.calories || 0,
-                protein: data.nutrition?.protein || 0,
-                carbs: data.nutrition?.carbs || 0,
-                fat: data.nutrition?.fat || 0,
-                portion_size: data.nutrition?.portion_size || "100g",
-                confidence: data.confidence || 0,
-            }],
-            total_calories: data.nutrition?.calories || 0,
-            total_protein: data.nutrition?.protein || 0,
-            total_carbs: data.nutrition?.carbs || 0,
-            total_fat: data.nutrition?.fat || 0,
-            confidence_score: data.confidence || 0
-        };
-
-          const { food_items, total_calories, total_protein, total_carbs, total_fat } = transformedAnalysis;
+        // Destructure the analysis and its `food_items`
+        const { food_items, total_calories, total_protein, total_carbs, total_fat, confidence_score, image_url } = data;
 
         // Add food analysis message & image
         const analysisMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
-          content: `I've analyzed your food image! Here's what I found:<br/><br/>${transformedAnalysis.food_items
+          content: `I've analyzed your food image! Here's what I found:<br/><br/>${food_items
             .map(
               (item: any) =>
                 `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
             )
             .join(
               "<br/><br/>",
-            )}<br/><br/><strong>Total:</strong> ${transformedAnalysis.total_calories} calories, ${transformedAnalysis.total_protein}g protein, ${transformedAnalysis.total_carbs}g carbs, ${transformedAnalysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
+            )}<br/><br/><strong>Total:</strong> ${total_calories} calories, ${total_protein}g protein, ${total_carbs}g carbs, ${total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
           timestamp: new Date(),
-          foodAnalysis: transformedAnalysis,
-          imageUrl: data.image_url || "",
+          foodAnalysis: data,
+          imageUrl: image_url || "",
           fileName: selectedFile.name,
         }
 
     setMessages((prev) => [...prev, analysisMessage]);
-    setLastFoodAnalysis(transformedAnalysis);
+    setLastFoodAnalysis(data);
 
     setSelectedFile(null);
     if (previewUrl) {
