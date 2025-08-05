@@ -1,22 +1,24 @@
+
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Salad, Camera, Send, User, Bot, LogOut, Loader2, X } from "lucide-react"
+import { Salad, Camera, Send, User, Bot, LogOut, Loader2,X } from "lucide-react"
 
 interface Message {
   id: string
   role: "user" | "assistant"
   content: string
   timestamp: Date
-  foodAnalysis?: FoodAnalysis | null;
+  foodAnalysis?: any
   imageUrl?: string
-  fileName?: string
+  fileName?: string 
 }
 
 interface FoodAnalysis {
@@ -35,7 +37,6 @@ interface FoodAnalysis {
   total_fat: number
   confidence_score?: number
 }
-
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -47,8 +48,9 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+  const router = useRouter()
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username")
@@ -82,7 +84,7 @@ export default function ChatPage() {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file)
-
+      
       // Create and set the preview URL
       const objectUrl = URL.createObjectURL(file)
       setPreviewUrl(objectUrl)
@@ -109,13 +111,18 @@ export default function ChatPage() {
   }
 
   const openImageModal = () => {
-    setIsModalOpen(true)
-  }
+  setIsModalOpen(true);
+  };
 
   // Add this function to close the modal
   const closeImageModal = () => {
-    setIsModalOpen(false)
-  }
+    setIsModalOpen(false);
+    setModalImageUrl(null);
+  };
+
+  const handleImageModal = (url: string) => {
+  setModalImageUrl(url);
+};
 
   const analyzeFoodImage = async () => {
     if (!selectedFile) return
@@ -129,52 +136,47 @@ export default function ChatPage() {
       const response = await fetch("/api/food/analyze", {
         method: "POST",
         body: formData,
-      });
+      })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const analysis = await response.json()
 
-      const data = await response.json();
-      console.log("Raw analysis data:", data);
-
-        // Destructure the analysis and its `food_items`
-        const { food_items, total_calories, total_protein, total_carbs, total_fat, confidence_score, image_url } = data;
+      if (response.ok && analysis && Array.isArray(analysis.food_items)) {
+        setLastFoodAnalysis(analysis)
 
         // Add food analysis message & image
         const analysisMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
-          content: `I've analyzed your food image! Here's what I found:<br/><br/>${food_items
+          content: `I've analyzed your food image! Here's what I found:<br/><br/>${analysis.food_items
             .map(
               (item: any) =>
                 `🍽️ <strong>${item.name}</strong> (${item.portion_size})<br/>   Calories: ${item.calories} | Protein: ${item.protein}g | Carbs: ${item.carbs}g | Fat: ${item.fat}g`,
             )
             .join(
               "<br/><br/>",
-            )}<br/><br/><strong>Total:</strong> ${total_calories} calories, ${total_protein}g protein, ${total_carbs}g carbs, ${total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
+            )}<br/><br/><strong>Total:</strong> ${analysis.total_calories} calories, ${analysis.total_protein}g protein, ${analysis.total_carbs}g carbs, ${analysis.total_fat}g fat<br/><br/>Feel free to ask me any questions about this meal!`,
           timestamp: new Date(),
-          foodAnalysis: data,
-          imageUrl: image_url || "",
+          foodAnalysis: analysis,
+          imageUrl: analysis.image_url || "",
           fileName: selectedFile.name,
         }
 
-    setMessages((prev) => [...prev, analysisMessage]);
-    setLastFoodAnalysis(data);
-
-    setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPreviewUrl(null);
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
+        setMessages((prev) => [...prev, analysisMessage])
+        setSelectedFile(null)
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl)
+        }
+        setPreviewUrl(null)
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      } else {
+        alert("Failed to analyze image. Please try again.")
+      }
     } catch (error) {
       console.error("Food analysis error:", error)
-      alert("Failed to analyze image. Please try again.")
+      alert("An error occurred while analyzing the image.")
     } finally {
       setIsAnalyzing(false)
     }
@@ -296,7 +298,7 @@ export default function ChatPage() {
                           src={message.imageUrl}
                           alt="uploaded food"
                           className="w-40 sm:w-48 md:w-56 h-auto rounded-md border border-green-200 cursor-pointer object-cover"
-                          onClick={openImageModal}
+                          onClick={() => handleImageModal(message.imageUrl!)}
                         />
                       </div>
                     )}
@@ -338,13 +340,13 @@ export default function ChatPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {previewUrl && (
-                    <div
+                    <div 
                       className="h-12 w-12 rounded-md overflow-hidden border border-green-300 cursor-pointer"
                       onClick={openImageModal}
                     >
-                      <img
-                        src={previewUrl}
-                        alt="Food preview"
+                      <img 
+                        src={previewUrl} 
+                        alt="Food preview" 
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -384,18 +386,18 @@ export default function ChatPage() {
 
           {/* Image Modal */}
           {isModalOpen && previewUrl && (
-            <div
+            <div 
               className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
               onClick={closeImageModal}
             >
               <div className="relative max-w-md max-h-[70vh] w-full mx-4">
-                <img
-                  src={previewUrl}
-                  alt="Food"
+                <img 
+                  src={previewUrl} 
+                  alt="Food" 
                   className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
                 />
-                <button
+                <button 
                   className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -434,6 +436,30 @@ export default function ChatPage() {
             </form>
           </div>
         </Card>
+        {modalImageUrl && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+            onClick={closeImageModal}
+          >
+            <div className="relative max-w-md max-h-[70vh] w-full mx-4">
+              <img
+                src={modalImageUrl}
+                alt="Food"
+                className="w-full h-auto rounded-lg object-contain max-h-[65vh]"
+                onClick={e => e.stopPropagation()}
+              />
+              <button
+                className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-green-700 border border-green-300 rounded-full hover:bg-green-50"
+                onClick={e => {
+                  e.stopPropagation();
+                  closeImageModal();
+                }}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
