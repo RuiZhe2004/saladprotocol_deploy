@@ -139,6 +139,7 @@ export default function ChatPage() {
       })
 
       const analysis = await response.json()
+      console.log("Raw analysis data:", data)
 
       if (response.ok && analysis && Array.isArray(analysis.food_items)) {
         setLastFoodAnalysis(analysis)
