@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Construct the backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_MODEL_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_AMODEL_URL;
 
     if (!backendUrl) {
-      console.error("NEXT_PUBLIC_MODEL_URL is not defined in Vercel environment variables.");
-      return NextResponse.json({ error: "Internal server error: NEXT_PUBLIC_MODEL_URL not set" }, { status: 500 });
+      console.error("NEXT_PUBLIC_AMODEL_URL is not defined in Vercel environment variables.");
+      return NextResponse.json({ error: "Internal server error: NEXT_PUBLIC_AMODEL_URL not set" }, { status: 500 });
     }
 
     console.log(`Calling backend at: ${backendUrl}`);
