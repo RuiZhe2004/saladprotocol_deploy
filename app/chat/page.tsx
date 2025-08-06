@@ -161,8 +161,6 @@ export default function ChatPage() {
           fileName: selectedFile.name,
         }
 
-        console.log("Analysis Message", analysisMessage)
-
         setMessages((prev) => [...prev, analysisMessage])
         setSelectedFile(null)
         if (previewUrl) {
