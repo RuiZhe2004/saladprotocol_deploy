@@ -1,4 +1,3 @@
-
 "use client"
 
 import type React from "react"
@@ -139,6 +138,7 @@ export default function ChatPage() {
       })
 
       const analysis = await response.json()
+      console.log("Analysis data:", analysis)
 
       if (response.ok && analysis && Array.isArray(analysis.food_items)) {
         setLastFoodAnalysis(analysis)
@@ -160,6 +160,8 @@ export default function ChatPage() {
           imageUrl: analysis.image_url || "",
           fileName: selectedFile.name,
         }
+
+        console.log("Analysis Message", analysisMessage)
 
         setMessages((prev) => [...prev, analysisMessage])
         setSelectedFile(null)
