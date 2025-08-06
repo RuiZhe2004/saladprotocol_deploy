@@ -13,7 +13,7 @@ class FirebaseService:
         # Initialize Firebase Admin SDK
         if not firebase_admin._apps:
             # Use service account key file or default credentials
-            cred = credentials.Certificate(r"firebase_credentials.json") #credentials.ApplicationDefault()  
+            cred = credentials.Certificate("backend/firebase_credentials.json")#credentials.ApplicationDefault()  
             firebase_admin.initialize_app(cred)
         
         self.db = firestore.client()

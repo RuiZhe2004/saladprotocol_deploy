@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
 
 # Copy your app code
 COPY . .
-COPY firebase_credentials.json .
+COPY firebase_credentials.json backend/
 
 # ─────────────────────────────────────────────
 # Runtime image (same base as builder)

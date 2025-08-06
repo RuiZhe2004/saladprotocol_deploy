@@ -12,7 +12,8 @@ class FoodService:
     def __init__(self, firebase_service, vector_service):
         self.firebase_service = firebase_service
         self.vector_service = vector_service
-        self.custom_model_url = os.getenv("CUSTOM_MODEL_URL", "http://localhost:8001")
+        self.custom_pmodel_url = os.getenv("NEXT_PUBLIC_PMODEL_URL", "http://localhost:8001")
+        self.custom_amodel_url = os.getenv("NEXT_PUBLIC_AMODEL_URL", "http://localhost:8001/analyze")
         self.gcs_bucket_name = os.getenv("GCS_BUCKET_NAME", "your-bucket-name")
     
     async def analyze_food_image(self, image_data: bytes, filename: str, username: str) -> Dict[str, Any]:
@@ -73,7 +74,7 @@ class FoodService:
         try:
             async with aiohttp.ClientSession() as session:
                 # Use the /predict endpoint with the image URL
-                url = f"{self.custom_model_url}/predict?url={image_url}"
+                url = f"{self.custom_pmodel_url}?url={image_url}"
                 
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -174,38 +175,9 @@ class FoodService:
                         "fat": fat,
                         "portion_size": "100g"
                     }
-
-
-
-                    # nutrients = {n["nutrientName"].lower(): n["value"] for n in foods[0].get("foodNutrients", [])}
-
-                    # return {
-                    #     "calories": nutrients.get("energy", 0),
-                    #     "protein": nutrients.get("protein", 0),
-                    #     "carbs": nutrients.get("carbohydrate, by difference", 0),
-                    #     "fat": nutrients.get("total lipid (fat)", 0),
-                    #     "portion_size": "100g"
-                    # }
         except Exception as e:
             logger.error(f"Nutrition API call failed: {str(e)}")
             return {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"}
-
-    # async def _get_nutrition_info(self, food_name: str) -> Dict[str, Any]:
-    #     """
-    #     Get nutrition information for the predicted food.
-    #     """
-    #     # This is a simplified version - you could integrate with a nutrition API
-    #     nutrition_data = {
-    #         "apple": {"calories": 52, "protein": 0.3, "carbs": 14.0, "fat": 0.2, "portion_size": "100g"},
-    #         "banana": {"calories": 89, "protein": 1.1, "carbs": 22.8, "fat": 0.3, "portion_size": "100g"},
-    #         "carrot": {"calories": 41, "protein": 0.9, "carbs": 9.6, "fat": 0.2, "portion_size": "100g"},
-    #         "orange": {"calories": 47, "protein": 0.9, "carbs": 11.8, "fat": 0.1, "portion_size": "100g"},
-    #         "tomato": {"calories": 18, "protein": 0.9, "carbs": 3.9, "fat": 0.2, "portion_size": "100g"},
-    #         # Add more foods or call an actual API like USDA FoodData Central
-    #     }
-        
-    #     return nutrition_data.get(food_name.lower(), 
-    #                             {"calories": 0, "protein": 0, "carbs": 0, "fat": 0, "portion_size": "unknown"})
     
     def _upload_to_gcs(self, image_data: bytes, filename: str, username: str) -> str:
         """
@@ -241,7 +213,7 @@ class FoodService:
                 data = aiohttp.FormData()
                 data.add_field('image', image_data, content_type='image/jpeg')
                 
-                async with session.post(f"{self.custom_model_url}/analyze", data=data) as response:
+                async with session.post(f"{self.custom_amodel_url}", data=data) as response:
                     if response.status == 200:
                         return await response.json()
                     else:
