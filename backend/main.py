@@ -122,14 +122,16 @@ async def analyze_food(
         # Read image data
         image_data = await image.read()
         
+        logger.debug("Passing image for food analysis")  # Log image processing start
+
         # Analyze food using custom model
         analysis_result = await food_service.analyze_food_image(
             image_data=image_data,
             filename=image.filename,
             username=username
         )
-        
         return analysis_result
+    
     except Exception as e:
         logger.error(f"Food analysis error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
