@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Construct the backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_PYTHON_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL;
 
     console.log(`Calling backend at: ${backendUrl}`);
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     backendFormData.append("username", username);
 
     // Call Python backend for food analysis
-    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_URL}/food/analyze`,  {
+    const backendResponse = await fetch(`${backendUrl}/food/analyze`,  {
       method: "POST",
       body: backendFormData,
     });
